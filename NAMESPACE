@@ -1,0 +1,3 @@
+importFrom("stats", "runif")
+
+export("neighbourfun")
