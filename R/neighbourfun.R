@@ -175,3 +175,14 @@ neighbourfun <- function(wmin = 0,
     } else
         stop("no matches")
 }
+
+
+compare_logicals <- function(x, y, ...) {
+    argsL <- list(...)
+    if (!("sep" %in% names(argsL))) 
+        argsL$sep <- ""
+    do.call("cat",
+            c(list("\n", as.integer(x), "\n", as.integer(y), "\n",
+                   ifelse(x == y, " ", "^"), "\n"), argsL))
+    message("The vectors differ in ", sum(x != y), " place(s).")
+}
