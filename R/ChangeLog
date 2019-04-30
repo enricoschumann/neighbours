@@ -1,0 +1,5 @@
+2019-04-30  Enrico Schumann  <es@enricoschumann.net>
+
+        * neighbourfun.R (neighbourfun): new argument 'n':
+	number of elements in solution
+

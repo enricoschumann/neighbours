@@ -1,4 +1,5 @@
-neighbourfun <- function(wmin = 0,
+neighbourfun <- function(n = NULL,
+                         wmin = 0,
                          wmax = 1,
                          kmin = NULL,
                          kmax = NULL,
@@ -8,6 +9,12 @@ neighbourfun <- function(wmin = 0,
                          update = FALSE,
                          R = NULL, ...) {
 
+    if (!is.null(n) && length(wmin) == 1L)
+        wmin <- rep(wmin, n)
+
+    if (!is.null(n) && length(wmax) == 1L)
+        wmax <- rep(wmax, n)
+    
     if (!is.null(kmin))
         stop("no such neighbourhood yet")
     
