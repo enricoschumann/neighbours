@@ -1,5 +1,9 @@
 \name{neighbourfun}
 \alias{neighbourfun}
+\alias{neighborfun}
+\alias{neighbours}
+\alias{neighbors}
+\alias{neighbours-package}
 \title{
   Neighbourhood Functions
 }
@@ -9,8 +13,10 @@
 \usage{
 neighbourfun(wmin = 0, wmax = 1, kmin = NULL, kmax = NULL,
              stepsize, budget = TRUE, random = TRUE, update = FALSE, R = NULL, ...)
+neighborfun (wmin = 0, wmax = 1, kmin = NULL, kmax = NULL,
+             stepsize, budget = TRUE, random = TRUE, update = FALSE, R = NULL, ...)
+
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{wmin}{
     a numeric vector

@@ -20,12 +20,7 @@ neighbourfun <- function(min = 0,
         budget <- eval(Args$sum)
     else
         budget <- TRUE
-    
-    if (!is.null(n) && length(wmin) == 1L)
-        wmin <- rep(wmin, n)
 
-    if (!is.null(n) && length(wmax) == 1L)
-        wmax <- rep(wmax, n)
 
     if (type == "numeric") {
 
@@ -189,12 +184,49 @@ neighbourfun <- function(min = 0,
                 Rw <- x[[2]] + R[ , c(i, j)] %*% c(-eps, eps)
                 list(w = x, Rw = Rw)
             }
-            
+
         } else
             stop("no matches")
     } else if (type == "logical") {
 
-        
+        if (missing(stepsize))
+            stepsize <- 1
+
+        if (is.null(kmin) && is.null(kmax)) {
+
+            ## no constraints on number of TRUE values
+            if (!is.null(n)) {
+
+                function(x, ...) {
+                    i <- sample.int(n, stepsize)
+                    x[i] <- !x[i]
+                    x
+                }
+
+            } else {
+
+                function(x, ...) {
+                    i <- sample.int(length(x), stepsize)
+                    x[i] <- !x[i]
+                    x
+                }
+
+            }
+
+
+        } else if (!is.null(kmin) && !is.null(kmax) && kmin == kmax) {
+
+            ## logical with constant number of TRUE values
+
+            function(x, ...) {
+                true  <- which( x)
+                false <- which(!x)
+                x[true [sample.int(length( true), size = stepsize)]] <- FALSE
+                x[false[sample.int(length(false), size = stepsize)]] <- TRUE
+                x
+            }
+
+        }
     } else
         stop("no matches")
 }
