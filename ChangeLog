@@ -1,10 +1,15 @@
+2019-05-29  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/neighbourfun.R (neighbourfun): simplify
+        treatment of arguments
+
 2019-05-28  Enrico Schumann  <es@enricoschumann.net>
 
-	* R/neighbourfun.R (neighbourfun): new argument
-	'type', with default numeric
+        * R/neighbourfun.R (neighbourfun): new argument
+        'type', with default numeric
 
 2019-04-30  Enrico Schumann  <es@enricoschumann.net>
 
         * neighbourfun.R (neighbourfun): new argument 'n':
-	number of elements in solution
+        number of elements in solution
 

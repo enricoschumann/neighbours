@@ -10,17 +10,9 @@ neighbourfun <- function(min = 0,
                          n = NULL,
                          R = NULL, ...) {
 
-    Args <- as.list(match.call())
-
-    if ("min" %in% names(Args))
-        wmin <- eval(Args$min)
-    if ("max" %in% names(Args))
-        wmax <- eval(Args$max)
-    if ("sum" %in% names(Args))
-        budget <- eval(Args$sum)
-    else
-        budget <- TRUE
-
+    wmin <- min
+    wmax <- max
+    budget <- sum
 
     if (type == "numeric") {
 
