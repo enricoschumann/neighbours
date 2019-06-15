@@ -21,40 +21,6 @@ neighbourfun <- function(min = 0,
 
             stop("not implemented")
 
-        } else if (isTRUE(budget) && random && update) {
-
-            stop("not implemented")
-
-            ## if (length(wmin) > 1L || length(wmax) > 1L) {
-            ##     if (length(wmin) == 1L)
-            ##         wmin <- rep(wmin, length(wmax))
-            ##     if (length(wmax) == 1L)
-            ##         wmax <- rep(wmax, length(wmin))
-            ##     function(w, ...) {
-            ##         toSell <- which(w > wmin)
-            ##         toBuy  <- which(w < wmax)
-            ##         i <- toSell[sample.int(length(toSell), size = 1L)]
-            ##         j <- toBuy[ sample.int(length(toBuy),  size = 1L)]
-            ##         stepsize <- runif(1) * stepsize
-            ##         stepsize <- min(w[i] - wmin[i], wmax[j] - w[j], stepsize)
-            ##         w[i] <- w[i] - stepsize
-            ##         w[j] <- w[j] + stepsize
-            ##         w
-            ##     }
-            ## } else {
-            ##     function(w, ...) {
-            ##         toSell <- which(w > wmin)
-            ##         toBuy  <- which(w < wmax)
-            ##         i <- toSell[sample.int(length(toSell), size = 1L)]
-            ##         j <- toBuy[ sample.int(length(toBuy),  size = 1L)]
-            ##         stepsize <- runif(1) * stepsize
-            ##         stepsize <- min(w[i] - wmin, wmax - w[j], stepsize)
-            ##         w[i] <- w[i] - stepsize
-            ##         w[j] <- w[j] + stepsize
-            ##         w
-            ##     }
-            ## }
-
         } else if (isTRUE(budget) && random && !update) {
             if (length(wmin) > 1L || length(wmax) > 1L) {
                 if (length(wmin) == 1L)
@@ -145,9 +111,39 @@ neighbourfun <- function(min = 0,
             }
         } else if (budget &&
                    length(budget) == 1L &&
+                   random && update &&
+                   is.null(kmax)) {
+            if (is.null(R))
+                stop(sQuote("R"), " must be provided when ",
+                     sQuote("update"), " is TRUE")
+
+            if (length(wmin) > 1L || length(wmax) > 1L) {
+                if (length(wmin) == 1L)
+                    wmin <- rep(wmin, length(wmax))
+                if (length(wmax) == 1L)
+                    wmax <- rep(wmax, length(wmin))
+            }
+            function(w, ...) {
+                tol <- 1e-12
+                x <- w[[1]]
+
+                to_buy <- which(x < wmax-tol)
+                to_sell <- which(x > tol)
+
+                i <- to_sell[sample.int(length(to_sell), size = 1L)]
+                j <- to_buy[sample.int(length(to_buy), size = 1L)]
+                eps <- runif(1) * stepsize
+                eps <- min(x[i], wmax - x[j], eps)
+                x[i] <- x[i] - eps
+                x[j] <- x[j] + eps
+                Rw <- x[[2]] + R[, c(i, j)] %*% c(-eps, eps)
+                list(w = x, Rw = Rw)
+            }
+            
+        } else if (budget &&
+                   length(budget) == 1L &&
                    !is.null(kmax) &&
-                   random
-                   && update) {
+                   random && update) {
 
             if (is.null(R))
                 stop(sQuote("R"), " must be provided when ",
