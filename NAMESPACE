@@ -1,4 +1,6 @@
 importFrom("stats", "runif")
 
 export("neighbourfun",
-       "neighborfun")
+       "neighborfun",
+       "random_vector",
+       "compare_vectors")

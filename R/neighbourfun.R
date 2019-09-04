@@ -7,6 +7,7 @@ neighbourfun <- function(min = 0,
                          random = TRUE,
                          update = FALSE,
                          type = "numeric",
+                         active = TRUE,
                          n = NULL,
                          R = NULL, ...) {
 
@@ -22,51 +23,105 @@ neighbourfun <- function(min = 0,
             stop("not implemented")
 
         } else if (isTRUE(budget) && random && !update) {
+
+            ## -------- RANDOM STEPSIZE --------
+
             if (length(wmin) > 1L || length(wmax) > 1L) {
                 if (length(wmin) == 1L)
                     wmin <- rep(wmin, length(wmax))
                 if (length(wmax) == 1L)
                     wmax <- rep(wmax, length(wmin))
-                function(x, ...) {
-                    toSell <- which(x > wmin)
-                    toBuy  <- which(x < wmax)
-                    i <- toSell[sample.int(length(toSell), size = 1L)]
-                    j <- toBuy[ sample.int(length(toBuy),  size = 1L)]
-                    stepsize <- runif(1) * stepsize
-                    stepsize <- min(x[i] - wmin[i], wmax[j] - x[j], stepsize)
-                    x[i] <- x[i] - stepsize
-                    x[j] <- x[j] + stepsize
-                    x
-                }
+                if (isTRUE(active))
+                    function(x, ...) {
+                        toSell <- which(x > wmin)
+                        toBuy  <- which(x < wmax)
+                        i <- toSell[sample.int(length(toSell), size = 1L)]
+                        j <- toBuy[ sample.int(length(toBuy),  size = 1L)]
+                        stepsize <- runif(1) * stepsize
+                        stepsize <- min(x[i] - wmin[i], wmax[j] - x[j], stepsize)
+                        x[i] <- x[i] - stepsize
+                        x[j] <- x[j] + stepsize
+                        x
+                    }
+                else
+                    function(x, ...) {
+                        toSell <- which(x[active] > wmin[active])
+                        toBuy  <- which(x[active] < wmax[active])
+                        i <- toSell[sample.int(length(toSell), size = 1L)]
+                        j <- toBuy[ sample.int(length(toBuy),  size = 1L)]
+                        stepsize <- runif(1) * stepsize
+                        stepsize <- min(x[active][i] - wmin[active][i],
+                                        wmax[active][j] - x[active][j],
+                                        stepsize)
+                        x[active][i] <- x[active][i] - stepsize
+                        x[active][j] <- x[active][j] + stepsize
+                        x
+                    }
             } else {
-                function(x, ...) {
-                    x.reduce   <- which(x > wmin)
-                    x.increase <- which(x < wmax)
-                    i <- x.reduce  [sample.int(length(x.reduce  ), size = 1L)]
-                    j <- x.increase[sample.int(length(x.increase), size = 1L)]
-                    stepsize <- runif(1) * stepsize
-                    stepsize <- min(x[i] - wmin, wmax - x[j], stepsize)
-                    x[i] <- x[i] - stepsize
-                    x[j] <- x[j] + stepsize
-                    x
-                }
+                ## wmin and wmax have a length of 1
+                if (isTRUE(active))
+                    function(x, ...) {
+                        x.reduce   <- which(x > wmin)
+                        x.increase <- which(x < wmax)
+                        i <- x.reduce  [sample.int(length(x.reduce  ), size = 1L)]
+                        j <- x.increase[sample.int(length(x.increase), size = 1L)]
+                        stepsize <- runif(1) * stepsize
+                        stepsize <- min(x[i] - wmin, wmax - x[j], stepsize)
+                        x[i] <- x[i] - stepsize
+                        x[j] <- x[j] + stepsize
+                        x
+                    }
+                else
+                    function(x, ...) {
+                        x.reduce   <- which(x[active] > wmin)
+                        x.increase <- which(x[active] < wmax)
+                        i <- x.reduce  [sample.int(length(x.reduce  ), size = 1L)]
+                        j <- x.increase[sample.int(length(x.increase), size = 1L)]
+                        stepsize <- runif(1) * stepsize
+                        stepsize <- min(x[active][i] - wmin,
+                                        wmax - x[active][j],
+                                        stepsize)
+                        x[active][i] <- x[active][i] - stepsize
+                        x[active][j] <- x[active][j] + stepsize
+                        x
+                    }
+
             }
         } else if (budget && length(budget) == 1L && !random && !update) {
+
+            ## -------- FIXED STEPSIZE --------
+
             if (length(wmin) > 1L || length(wmax) > 1L) {
                 if (length(wmin) == 1L)
                     wmin <- rep(wmin, length(wmax))
                 if (length(wmax) == 1L)
                     wmax <- rep(wmax, length(wmin))
-                function(w, ...) {
-                    toSell <- which(w > wmin)
-                    toBuy  <- which(w < wmax)
-                    i <- toSell[sample.int(length(toSell), size = 1L)]
-                    j <- toBuy[ sample.int(length(toBuy),  size = 1L)]
-                    stepsize <- min(w[i] - wmin[i], wmax[j] - w[j], stepsize)
-                    w[i] <- w[i] - stepsize
-                    w[j] <- w[j] + stepsize
-                    w
-                }
+                if (isTRUE(active))
+                    function(w, ...) {
+                        toSell <- which(w > wmin)
+                        toBuy  <- which(w < wmax)
+                        i <- toSell[sample.int(length(toSell), size = 1L)]
+                        j <- toBuy[ sample.int(length(toBuy),  size = 1L)]
+                        stepsize <- min(w[i] - wmin[i],
+                                        wmax[j] - w[j],
+                                        stepsize)
+                        w[i] <- w[i] - stepsize
+                        w[j] <- w[j] + stepsize
+                        w
+                    }
+                else
+                    function(w, ...) {
+                        toSell <- which(w[active] > wmin)
+                        toBuy  <- which(w[active] < wmax)
+                        i <- toSell[sample.int(length(toSell), size = 1L)]
+                        j <- toBuy[ sample.int(length(toBuy),  size = 1L)]
+                        stepsize <- min(w[active][i] - wmin[active][i],
+                                        wmax[active][j] - w[active][j],
+                                        stepsize)
+                        w[active][i] <- w[active][i] - stepsize
+                        w[active][j] <- w[active][j] + stepsize
+                        w
+                    }
             } else {
                 function(w, ...) {
                     toSell <- which(w > wmin)
@@ -139,7 +194,7 @@ neighbourfun <- function(min = 0,
                 Rw <- x[[2]] + R[, c(i, j)] %*% c(-eps, eps)
                 list(w = x, Rw = Rw)
             }
-            
+
         } else if (budget &&
                    length(budget) == 1L &&
                    !is.null(kmax) &&
@@ -221,12 +276,49 @@ neighbourfun <- function(min = 0,
 
 neighborfun <- neighbourfun
 
-compare_logicals <- function(x, y, ...) {
-    argsL <- list(...)
-    if (!("sep" %in% names(argsL)))
-        argsL$sep <- ""
-    do.call("cat",
-            c(list("\n", as.integer(x), "\n", as.integer(y), "\n",
-                   ifelse(x == y, " ", "^"), "\n"), argsL))
-    message("The vectors differ in ", sum(x != y), " place(s).")
+compare_vectors <- function(..., sep = "") {
+    vecs <- list(...)
+    if (length(unique(lengths(vecs))) != 1)
+        stop("vectors have different lengths")
+    if (mode(vecs[[1]]) == "logical") {
+        do.call(
+            "cat",
+            c(list(as.integer(vecs[[1]]),
+                   "\n",
+                   as.integer(vecs[[2]]),
+                   "\n",
+                   ifelse(vecs[[1L]] == vecs[[2L]], " ", "^"),
+                   "\n", sep = "")))
+        d <- sum(vecs[[1]] != vecs[[2]])
+        message("The vectors differ in  ", d, "  place",
+                if (d != 1) "s", ".")
+        invisible(d)
+    }
+}
+
+random_vector <- function(min = 0,
+                          max = 1,
+                          kmin = NULL,
+                          kmax = NULL,
+                          sum = TRUE,
+                          type = "numeric",
+                          n = NULL,
+                          ...) {
+
+    if (type == "logical") {
+        if (!is.null(kmin) && !is.null(kmax)) {
+            stopifnot(kmin <= kmax)
+
+            if (kmin == kmax)
+                k <- kmin
+            else
+                k <- sample.int(seq(from = kmin, to = kmax), size = 1)
+
+            ans <- logical(n)
+            i <- sample(n, size = k)
+            ans[i] <- TRUE
+
+        }
+    }
+    ans
 }

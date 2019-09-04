@@ -1,3 +1,11 @@
+2019-07-24  Enrico Schumann  <es@enricoschumann.net>
+
+        * NAMESPACE: export 'random_vector' and
+        'compare_vectors'
+
+        * R/neighbourfun.R (random_vector): add function
+        (compare_vectors): add function
+
 2019-05-29  Enrico Schumann  <es@enricoschumann.net>
 
         * R/neighbourfun.R (neighbourfun): simplify
