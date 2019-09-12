@@ -1,6 +1,8 @@
 ## -*- truncate-lines: t; -*-
 
-steps <- 10000
+library("tinytest")
+library("neighbours")
+steps <- 1000
 
 
 ## ------ logical: constant k
@@ -49,6 +51,23 @@ for (i in 1:steps) {
 
 
 
+## ------ numeric: change 1 element, fixed stepsize
+x.min <- -0.05
+x.max <-  0.05
+N <- neighbourfun(type = "numeric",
+                  min = x.min,
+                  max = x.max,
+                  stepsize = 0.01,
+                  random = FALSE)
+x <- rep(1/25, 25)
+for (i in 1:steps) {
+    xn <- N(x)
+    expect_true(all(xn <= x.max))
+    expect_true(all(xn >= x.min))
+    x <- xn
+}
+
+
 ## ------ numeric: change 1 element
 x.min <- -0.05
 x.max <-  0.05
@@ -83,3 +102,72 @@ for (i in 1:steps) {
     expect_true(all(x[6:20] == xn[6:20]))
     x <- xn
 }
+
+
+
+
+## ------ numeric: updating
+x.min <- -0.05
+x.max <-  0.05
+A <- array(rnorm(100*25), dim = c(100,25))
+N <- neighbourfun(type = "numeric",
+                  min = x.min,
+                  max = x.max,
+                  stepsize = 0.015,
+                  update = "Ax",
+                  A = A)
+x <- rep(1/25, 25)
+attr(x, "Ax") <- A %*% x
+
+for (i in 1:steps) {
+    xn <- N(x, A)
+    expect_true(all(xn <= x.max))
+    expect_true(all(xn >= x.min))
+    x <- xn
+}
+
+x <- rep(1/25, 25)
+attr(x, "Ax") <- A %*% x
+for (i in 1:steps) {
+    x <- N(x, A)
+}
+expect_equivalent(A %*%x, attr(x, "Ax"))
+
+
+
+
+## ------ numeric: updating,active
+x.min <- -0.1
+x.max <-  0.1
+active <- 1:5
+A <- array(rnorm(100*25), dim = c(100,25))
+N <- neighbourfun(type = "numeric",
+                  min = x.min,
+                  max = x.max,
+                  stepsize = 0.015,
+                  update = "Ax",
+                  A = A,
+                  active = 1:5)
+x <- rep(1/25, 25)
+attr(x, "Ax") <- A %*% x
+
+for (i in 1:steps) {
+    xn <- N(x, A)
+    expect_true(all(xn <= x.max))
+    expect_true(all(xn >= x.min))
+    x <- xn
+}
+
+x0 <- x <- rep(1/25, 25)
+attr(x, "Ax") <- A %*% x
+for (i in 1:steps) {
+    x <- N(x, A)
+}
+for (i in 1:steps) {
+    xn <- N(x)
+    expect_true(all(xn <= x.max + sqrt(.Machine$double.eps)))
+    expect_true(all(xn + sqrt(.Machine$double.eps) >= x.min))
+    expect_true(all(x[6:25] == xn[6:25]))
+    x <- xn
+}
+expect_true(all(x[6:25] == x0[6:25]))

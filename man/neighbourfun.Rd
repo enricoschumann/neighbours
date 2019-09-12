@@ -52,9 +52,16 @@ neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
 
   }
   \item{update}{
-    logical
+
+    either \code{logical} (the default \code{FALSE}) or
+    character, specifying the type of
+    updating. Currently supported is \code{"Ax"}, in
+    which case the matrix \code{A} be specified. See
+    examples.
+
+
   }
-  \item{R}{
+  \item{A}{
     a numeric matrix
   }
   \item{type}{
@@ -82,7 +89,7 @@ neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
   Gilli, M., Maringer, D. and Schumann, E. (2011) \emph{Numerical
   Methods and Optimization in Finance}. Elsevier.
 
-  Schumann, E. (2018) Financial Optimisation with R (\pkg{NMOF} Manual).
+  Schumann, E. (2019) Financial Optimisation with R (\pkg{NMOF} Manual).
   \url{http://enricoschumann.net/NMOF.htm#NMOFmanual}
 
 }
@@ -93,6 +100,48 @@ neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
   \code{\link[NMOF]{TAopt}}
 }
 \examples{
-## TODO
+## a LOGICAL neighbourhood
+x <- logical(8)
+x[1:3] <- TRUE
+
+N <- neighbourfun(type = "logical", kmin = 3, kmax = 3)
+
+cat(ifelse(x, "o", "."), "  | initial solution ",
+    sep = "", fill = TRUE)
+for (i in 1:5) {
+    x <- N(x)
+    cat(ifelse(x, "o", "."), sep = "", fill = TRUE)
 }
+## ooo.....  | initial solution
+## oo....o.
+## o...o.o.
+## o.o.o...
+## oo..o...
+## oo....o.
+
+
+
+## UPDATING
+##   the vector is 'x' is used in the product 'Ax'
+A <- array(rnorm(100*25), dim = c(100, 25))
+N <- neighbourfun(type = "numeric",
+                  stepsize = 0.05,
+                  update = "Ax",
+                  A = A)
+x <- rep(1/25, 25)
+attr(x, "Ax") <- A %*% x
+for (i in 1:10) {
+    x <- N(x, A)
+}
+all.equal(A \%*\% x, attr(x, "Ax"))
+
+
+
+\donttest{
+## a useful way to specify settings
+settings <- list(...)
+do.call(neighbourfun, settings)
+}
+}
+
 \keyword{ optimize }

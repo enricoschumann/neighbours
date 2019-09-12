@@ -2,7 +2,7 @@ Package: neighbours
 Type: Package
 Title: Neighbourhood Functions for Local-Search Algorithms
 Version: 0.1-0
-Date: 2019-09-03
+Date: 2019-09-12
 Maintainer: Enrico Schumann <es@enricoschumann.net>
 Authors@R: person(given = "Enrico", family = "Schumann",
                   role  = c("aut", "cre"),
@@ -20,5 +20,6 @@ Description: Neighbourhood functions are key components
   created for portfolio-optimization models, but can
   also be used for other models.
 License: GPL-3
-URL: http://enricoschumann.net/neighbours/
+URL: http://enricoschumann.net/neighbours/,
+     https://github.com/enricoschumann/neighbours
 Suggests: NMOF, tinytest
