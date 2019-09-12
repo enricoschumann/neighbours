@@ -14,12 +14,12 @@
 neighbourfun(min = 0, max = 1, kmin = NULL, kmax = NULL,
              stepsize, sum = TRUE, random = TRUE, update = FALSE,
              type = "numeric", active = TRUE, n = NULL,
-             R = NULL, ...)
+             A = NULL, ...)
 
 neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
              stepsize, sum = TRUE, random = TRUE, update = FALSE,
              type = "numeric", active = TRUE, n = NULL,
-             R = NULL, ...)
+             A = NULL, ...)
 }
 \arguments{
   \item{min}{
@@ -82,7 +82,9 @@ neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
 }
 \value{
 
-  A function (closure).
+  A function (closure) with arguments \code{x} and
+  \code{...}.
+
 }
 \references{
 
@@ -129,16 +131,16 @@ N <- neighbourfun(type = "numeric",
                   update = "Ax",
                   A = A)
 x <- rep(1/25, 25)
-attr(x, "Ax") <- A %*% x
-for (i in 1:10) {
+attr(x, "Ax") <- A \%*\% x
+for (i in 1:10)
     x <- N(x, A)
-}
+
 all.equal(A \%*\% x, attr(x, "Ax"))
 
 
 
 \donttest{
-## a useful way to specify settings
+## a useful way to store/specify parameters
 settings <- list(...)
 do.call(neighbourfun, settings)
 }
