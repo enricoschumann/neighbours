@@ -9,16 +9,17 @@ Authors@R: person(given = "Enrico", family = "Schumann",
                   email = "es@enricoschumann.net",
                   comment = c(ORCID = "0000-0001-7601-6576"))
 Description: Neighbourhood functions are key components
-  of local-search algorithms such as Simulated Annealing
-  or Threshold Accepting.  These functions take a
-  solution and return a slightly-modified copy of it,
-  i.e. a neighbour.  The package provides a single
-  function, neighbourfun(), that produce a neighbourhood
-  function, based on various parameters such as minimum
-  or maximum values.  Currently supported are numeric
-  and logical solutions.  The algorithms were originally
-  created for portfolio-optimization models, but can
-  also be used for other models.
+  of local-search algorithms such as Simulated
+  Annealing or Threshold Accepting.  These functions
+  take a solution and return a slightly-modified copy
+  of it, i.e. a neighbour.  The package provides a
+  function neighbourfun() that constructs such
+  neighbourhood functions, based on various parameters
+  such as admissible ranges for elements in a solution.
+  Supported are numeric and logical solutions.  The
+  algorithms were originally created for
+  portfolio-optimization applications, but can be used
+  for other models as well.
 License: GPL-3
 URL: http://enricoschumann.net/neighbours/,
      https://github.com/enricoschumann/neighbours
