@@ -171,3 +171,67 @@ for (i in 1:steps) {
     x <- xn
 }
 expect_true(all(x[6:25] == x0[6:25]))
+
+
+## ------ numeric: change 1 element, fixed stepsize, min/max budget
+x.min <- -0.20
+x.max <-  0.20
+N <- neighbourfun(type = "numeric",
+                  min = x.min,
+                  max = x.max,
+                  stepsize = 0.01,
+                  random = FALSE,
+                  sum = c(0.8, 1.2))
+x <- rep(1/25, 25)
+for (i in 1:steps) {
+    xn <- N(x)
+    expect_true(all(round(xn - x, 8) %in% c(0, -0.01, 0.01)))
+    expect_true(all(xn <= x.max))
+    expect_true(all(xn >= x.min))
+    expect_true(sum(xn) <= 1.2)
+    expect_true(sum(xn) >= 0.8)
+    expect_true(sum(xn != x) <= 1L)
+    x <- xn
+}
+
+
+## ------ numeric: change 1 element, random stepsize, min/max budget
+x.min <- -0.20
+x.max <-  0.20
+N <- neighbourfun(type = "numeric",
+                  min = x.min,
+                  max = x.max,
+                  stepsize = 0.01,
+                  random = TRUE,
+                  sum = c(0.8, 1.2))
+x <- rep(1/25, 25)
+for (i in 1:steps) {
+    xn <- N(x)
+    expect_true(!all(round(xn - x, 8) %in% c(0, -0.01, 0.01)))
+    expect_true(all(xn <= x.max))
+    expect_true(all(xn >= x.min))
+    expect_true(sum(xn) <= 1.2)
+    expect_true(sum(xn) >= 0.8)
+    expect_true(sum(xn != x) <= 1L)
+    x <- xn
+}
+
+
+## ------ numeric: change 1 element, random stepsize, no budget
+x.min <- -0.20
+x.max <-  0.20
+N <- neighbourfun(type = "numeric",
+                  min = x.min,
+                  max = x.max,
+                  stepsize = 0.01,
+                  random = TRUE,
+                  sum = FALSE)
+x <- rep(1/25, 25)
+for (i in 1:steps) {
+    xn <- N(x)
+    expect_true(sum(xn) != sum(x))
+    expect_true(all(xn >= x.min))
+    expect_true(all(xn <= x.max))
+    expect_true(sum(xn != x) <= 1L)
+    x <- xn
+}

@@ -23,18 +23,45 @@ neighbourfun <- function(min = 0,
 
     if (type == "numeric") {
 
-        .body <- quote({
-            toSell <- which(x > wmin)
-            toBuy  <- which(x < wmax)
-            i <- toSell[sample.int(length(toSell), size = 1L)]
-            j <- toBuy[ sample.int(length(toBuy),  size = 1L)]
-            stepsize <- .stepsize
-            stepsize <- min(x[i] - wmin[i], wmax[j] - x[j], stepsize)
-            x[i] <- x[i] - stepsize
-            x[j] <- x[j] + stepsize
-            x
-        })
+        if (isTRUE(budget) || is.numeric(budget) && length(budget) == 1L) {
+            .body <- quote({
+                decrease <- which(x > wmin)
+                increase  <- which(x < wmax)
+                i <- decrease[sample.int(length(decrease), size = 1L)]
+                j <- increase[sample.int(length(increase),  size = 1L)]
+                stepsize <- .stepsize
+                stepsize <- min(x[i] - wmin[i], wmax[j] - x[j], stepsize)
+                x[i] <- x[i] - stepsize
+                x[j] <- x[j] + stepsize
+                x
+            })
+        } else if (is.numeric(budget) && length(budget) == 2L) {
+            .body <- quote({
+                i <- sample.int(length(x), size = 1L)
+                stepsize <- sample(c(-1, 1), size = 1) * .stepsize
+                stepsize <-
+                    if (stepsize < 0)
+                        max(wmin - x[i], stepsize, budget[1L] - sum(x))
+                    else
+                        min(wmax - x[i], stepsize, budget[2L] - sum(x))
 
+                x[i] <- x[i] + stepsize
+                x
+            })
+        } else if (isFALSE(budget)) {
+            .body <- quote({
+                i <- sample.int(length(x), size = 1L)
+                stepsize <- sample(c(-1, 1), size = 1) * .stepsize
+                stepsize <-
+                    if (stepsize < 0) {
+                        max(wmin - x[i], stepsize)
+                    } else {
+                        min(wmax - x[i], stepsize)
+                    }
+                x[i] <- x[i] + stepsize
+                x
+            })
+        }
 
 
         ## [random]
@@ -59,7 +86,7 @@ neighbourfun <- function(min = 0,
             if (!isTRUE(active))
                 .body <- .sub(.body, list(wmin = quote(wmin[active]),
                                           wmax = quote(wmax[active])))
-        } else {
+        } else if (!isFALSE(budget) && length(budget) == 1L) {
 
             ## wmin/wmax length == 1
             .body[[7L]] <- quote(
@@ -89,78 +116,10 @@ neighbourfun <- function(min = 0,
 
 
 
-        ans <- function(x, ...){}
+        ans <- function(x, ...) {}
         body(ans) <- .body
         return(ans)
     }
-
-##         } else if (budget && length(budget) == 2L && !random && !update) {
-##             if (length(wmin) > 1L || length(wmax) > 1L) {
-##                 if (length(wmin) == 1L)
-##                     wmin <- rep(wmin, length(wmax))
-##                 if (length(wmax) == 1L)
-##                     wmax <- rep(wmax, length(wmin))
-##                 function(w, ...) {
-##                     i <- sample.int(length(w), size = 1L)
-##                     stepsize <- sample(c(-1,1), size = 1)*stepsize
-##                     stepsize <- if (stepsize < 0) {
-##                                     max(wmin[i]-w[i], stepsize, budget[1]-sum(w))
-##                                 } else {
-##                                     min(wmax[i]-w[i], stepsize, budget[2]-sum(w))
-##                                 }
-##                     w[i] <- w[i] + stepsize
-##                     w
-##                 }
-##             } else {
-##                 function(w, ...) {
-##                     i <- sample.int(length(w), size = 1L)
-##                     stepsize <- sample(c(-1,1), size = 1)*stepsize
-##                     stepsize <- if (stepsize < 0) {
-##                                     max(wmin-w[i], stepsize, budget[1]-sum(w))
-##                                 } else {
-##                                     min(wmax-w[i], stepsize, budget[2]-sum(w))
-##                                 }
-##                     w[i] <- w[i] + stepsize
-##                     w
-##                 }
-##             }
-
-##         } else if (budget &&
-##                    length(budget) == 1L &&
-##                    !is.null(kmax) &&
-##                    random && update) {
-
-##             if (is.null(R))
-##                 stop(sQuote("R"), " must be provided when ",
-##                      sQuote("update"), " is TRUE")
-##             if (length(wmin) > 1L || length(wmax) > 1L) {
-##                 if (length(wmin) == 1L)
-##                     wmin <- rep(wmin, length(wmax))
-##                 if (length(wmax) == 1L)
-##                     wmax <- rep(wmax, length(wmin))
-##             }
-##             function(w, ...) {
-##                 tol <- 1e-12
-##                 x <- w[[1]]
-##                 J <- sum(x > tol)
-##                 if (J == kmax)
-##                     to_buy <- which(x > tol & w < wmax)
-##                 else
-##                     to_buy <- which(x < wmax)
-##                 to_sell <- which(x > tol)
-##                 i <- to_sell[sample.int(length(to_sell), size = 1L)]
-##                 j <- to_buy[sample.int(length(to_buy), size = 1L)]
-##                 eps <- runif(1) * stepsize
-##                 eps <- min(x[i], wmax - x[j], eps)
-##                 x[i] <- x[i] - eps
-##                 x[j] <- x[j] + eps
-##                 Rw <- x[[2]] + R[ , c(i, j)] %*% c(-eps, eps)
-##                 list(w = x, Rw = Rw)
-##             }
-
-##         } else
-##             stop("no matches")
-## }
 
 
     if (type == "logical") {
