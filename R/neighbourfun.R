@@ -162,6 +162,37 @@ neighbourfun <- function(min = 0,
             }
 
         }
+    } else if (type == "5/10/40") {
+        wmax  <- 0.05
+        wmax2 <- 0.1
+        max.sumL <- 0.4
+        if (is.null(kmax))
+            kmax <- 33
+        function(w, ...) {
+            k <- sum(abs(w) > 0)
+            eps <- runif(1)*0.5/100
+
+            to_sell <- w > 0
+            to_buy  <- if (k == kmax)
+                           w > 0 & w < wmax2
+                       else
+                           w < wmax2
+            to_sell <- which(to_sell)
+            to_buy  <- which(to_buy)
+            sumL <- sum(w[w > wmax])
+
+            i <- to_sell[sample.int(length(to_sell), size = 1L)]
+            j <- to_buy [sample.int(length(to_buy),  size = 1L)]
+            eps <- if (w[j] < wmax)
+                       min(eps, wmax  - w[j], w[i])
+                   else if (w[j] == wmax)
+                       min(eps, wmax2 - w[j], w[i], max(0, max.sumL - sumL - w[j]))
+                   else
+                       min(eps, wmax2 - w[j], w[i], max(0, max.sumL - sumL))
+            w[i] <- w[i] - eps
+            w[j] <- w[j] + eps
+            w
+        }
     } else
         stop("no matches")
 }
