@@ -161,7 +161,25 @@ neighbourfun <- function(min = 0,
                 x
             }
 
+        } else if (!is.null(kmin) && !is.null(kmax) && kmin < kmax) {
+
+            function(x, ...) {
+                true  <- which( x)
+                false <- which(!x)
+                n.true <- length(true)
+                if (n.true == kmax) {
+                    x[true[sample.int(length(true), size = stepsize)]] <- FALSE
+                } else if (n.true > kmin) {
+                    i <- sample.int(length(x), size = stepsize)
+                    x[i] <- !x[i]
+                } else {
+                    x[false[sample.int(length(false), size = stepsize)]] <- TRUE
+                }
+                x
+            }
+
         }
+
     } else if (type == "5/10/40") {
         wmax  <- 0.05
         wmax2 <- 0.1
