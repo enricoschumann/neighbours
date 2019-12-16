@@ -13,12 +13,12 @@
 \usage{
 neighbourfun(min = 0, max = 1, kmin = NULL, kmax = NULL,
              stepsize, sum = TRUE, random = TRUE, update = FALSE,
-             type = "numeric", active = TRUE, n = NULL,
+             type = "numeric", active = TRUE, length = NULL,
              A = NULL, ...)
 
 neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
              stepsize, sum = TRUE, random = TRUE, update = FALSE,
-             type = "numeric", active = TRUE, n = NULL,
+             type = "numeric", active = TRUE, length = NULL,
              A = NULL, ...)
 }
 \arguments{
@@ -67,7 +67,7 @@ neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
   \item{type}{
     string: either \code{"numeric"} or \code{"logical"}
   }
-  \item{n}{
+  \item{length}{
     integer: the length of a vector
   }
   \item{\dots}{
@@ -78,6 +78,7 @@ neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
 
   The function returns a closure.
 
+  \code{neighborfun} is an alias for \code{neighbourfun}.
 
 }
 \value{
@@ -88,8 +89,9 @@ neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
 }
 \references{
 
-  Gilli, M., Maringer, D. and Schumann, E. (2011) \emph{Numerical
-  Methods and Optimization in Finance}. Elsevier.
+  Gilli, M., Maringer, D. and Schumann, E. (2019) \emph{Numerical
+  Methods and Optimization in Finance}. 2nd edition. Elsevier.
+  \url{https://www.elsevier.com/books/numerical-methods-and-optimization-in-finance/gilli/978-0-12-815065-8}
 
   Schumann, E. (2019) Financial Optimisation with R (\pkg{NMOF} Manual).
   \url{http://enricoschumann.net/NMOF.htm#NMOFmanual}

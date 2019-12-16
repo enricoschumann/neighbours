@@ -8,7 +8,7 @@ neighbourfun <- function(min = 0,
                          update = FALSE,
                          type = "numeric",
                          active = TRUE,
-                         n = NULL,
+                         length = NULL,
                          A = NULL, ...) {
 
     wmin <- min
@@ -130,7 +130,7 @@ neighbourfun <- function(min = 0,
         if (is.null(kmin) && is.null(kmax)) {
 
             ## no constraints on number of TRUE values
-            if (!is.null(n)) {
+            if (!is.null(length)) {
 
                 function(x, ...) {
                     i <- sample.int(n, stepsize)
@@ -237,28 +237,63 @@ compare_vectors <- function(..., sep = "") {
     }
 }
 
-random_vector <- function(min = 0,
+random_vector <- function(length,
+                          min = 0,
                           max = 1,
                           kmin = NULL,
                           kmax = NULL,
                           sum = TRUE,
                           type = "numeric",
-                          n = NULL,
+                          n = 1,
+                          dist = "unif",
                           ...) {
-
+    ans <- NULL
     if (type == "logical") {
-        if (!is.null(kmin) && !is.null(kmax)) {
-            stopifnot(kmin <= kmax)
+        if (missing(length))
+            stop(sQuote("length"), " missing")
+        if (is.null(kmin))
+            kmin <- 0
+        if (is.null(kmax))
+            kmax <- length
+        stopifnot(kmin <= kmax)
+        ans <- array(logical(length*n), dim = c(length, n))
+        for (j in seq_len(n)) {
 
             if (kmin == kmax)
                 k <- kmin
             else
-                k <- sample.int(seq(from = kmin, to = kmax), size = 1)
+                k <- sample(seq(from = kmin, to = kmax), size = 1)
 
-            ans <- logical(n)
-            i <- sample(n, size = k)
-            ans[i] <- TRUE
+            ## ans <- logical(length)
+            i <- sample(length, size = k)
+            ans[i, j] <- TRUE
+        }
+        if (n == 1L)
+            dim(ans) <- NULL
 
+    } else if (type == "numeric") {
+        if (missing(length))
+            stop(sQuote("length"), " missing")
+        stopifnot(min <= max)
+
+        if (is.null(kmin) && is.null(kmax)) {
+            ans <- runif(length*n, min=min, max=max)
+            dim(ans) <- c(length, n)
+        } else {
+            if (is.null(kmin))
+                kmin <- 0
+            if (is.null(kmax))
+                kmax <- length
+            ans <- runif(length*n, min=min, max=max)
+            dim(ans) <- c(length, n)
+            for (j in seq_len(n)) {
+                if (kmin == kmax)
+                    k <- length - kmin
+                else
+                    k <- length - sample(seq(from = kmin, to = kmax), size = 1)
+                i <- sample(length, size = k)
+                ans[i, j] <- 0
+            }
         }
     }
     ans
