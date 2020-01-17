@@ -7,10 +7,13 @@
   Create one (or more) numeric or logical random vector.
 }
 \usage{
-random_vector(min = 0, max = 1, kmin = NULL, kmax = NULL,
-              sum = TRUE, type = "numeric", n = NULL, ...)
+random_vector(length, min = 0, max = 1, kmin = NULL, kmax = NULL,
+              sum = TRUE, type = "numeric", n = 1L, ...)
 }
 \arguments{
+  \item{length}{
+    numeric
+  }
   \item{min}{
     numeric
   }

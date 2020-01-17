@@ -133,7 +133,7 @@ neighbourfun <- function(min = 0,
             if (!is.null(length)) {
 
                 function(x, ...) {
-                    i <- sample.int(n, stepsize)
+                    i <- sample.int(length, stepsize)
                     x[i] <- !x[i]
                     x
                 }
@@ -245,7 +245,6 @@ random_vector <- function(length,
                           sum = TRUE,
                           type = "numeric",
                           n = 1,
-                          dist = "unif",
                           ...) {
     ans <- NULL
     if (type == "logical") {

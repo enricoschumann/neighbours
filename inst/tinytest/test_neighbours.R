@@ -2,7 +2,9 @@
 
 library("tinytest")
 library("neighbours")
-steps <- 1000
+
+steps <- if (Sys.getenv("ES19_TESTING") == "TRUE")
+             50000 else 1000
 
 
 ## ------ logical: constant k
@@ -48,6 +50,17 @@ for (i in 1:steps) {
     expect_equal(sum(xn != x), 3)
     x <- xn
 }
+
+## ------ logical: between 0 and 5 elements
+N <- neighbourfun(type = "logical", stepsize = 1, kmin = 0, kmax = 5)
+x <- logical(10)
+for (i in 1:steps) {
+    xn <- N(x)
+    expect_true(sum(xn) <= 5)
+    x <- xn
+}
+
+
 
 
 
@@ -207,11 +220,10 @@ N <- neighbourfun(type = "numeric",
 x <- rep(1/25, 25)
 for (i in 1:steps) {
     xn <- N(x)
-    expect_true(!all(round(xn - x, 8) %in% c(0, -0.01, 0.01)))
     expect_true(all(xn <= x.max))
     expect_true(all(xn >= x.min))
-    expect_true(sum(xn) <= 1.2)
-    expect_true(sum(xn) >= 0.8)
+    expect_true(sum(xn) <= 1.2 + 1e-12)
+    expect_true(sum(xn) >= 0.8 - 1e-12)
     expect_true(sum(xn != x) <= 1L)
     x <- xn
 }
@@ -233,5 +245,27 @@ for (i in 1:steps) {
     expect_true(all(xn >= x.min))
     expect_true(all(xn <= x.max))
     expect_true(sum(xn != x) <= 1L)
+    x <- xn
+}
+
+
+
+
+
+## ------ numeric: change 1 element, random stepsize, sum == 0
+x.min <- -0.05
+x.max <-  0.05
+N <- neighbourfun(type = "numeric",
+                  min = x.min,
+                  max = x.max,
+                  stepsize = 0.01)
+x <- runif(20, max = x.max)
+x <- x - mean(x)
+
+for (i in 1:steps) {
+    xn <- N(x)
+    expect_equivalent(sum(xn), 0)
+    expect_true(all(xn >= x.min))
+    expect_true(all(xn <= x.max))
     x <- xn
 }
