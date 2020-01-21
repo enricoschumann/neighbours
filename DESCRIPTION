@@ -19,7 +19,9 @@ Description: Neighbourhood functions are key components
   Supported are numeric and logical solutions.  The
   algorithms were originally created for
   portfolio-optimization applications, but can be used
-  for other models as well.
+  for other models as well.  The package also provides
+  helper functions for creating random initial solutions and
+  for comparing solutions.
 License: GPL-3
 URL: http://enricoschumann.net/neighbours/,
      https://github.com/enricoschumann/neighbours

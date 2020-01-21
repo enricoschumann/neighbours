@@ -221,7 +221,7 @@ compare_vectors <- function(..., sep = "") {
     vecs <- list(...)
     if (length(unique(lengths(vecs))) != 1)
         stop("vectors have different lengths")
-    if (mode(vecs[[1]]) == "logical") {
+    if (mode(vecs[[1L]]) == "logical") {
         do.call(
             "cat",
             c(list(as.integer(vecs[[1]]),
