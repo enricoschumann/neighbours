@@ -22,14 +22,12 @@ neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
              A = NULL, ...)
 }
 \arguments{
-  \item{min}{
-    a numeric vector
+  \item{min}{a numeric vector
   }
-  \item{max}{
-    a numeric vector
+  \item{max}{a numeric vector
   }
-  \item{kmin}{
-    a numeric vector
+  \item{kmin}{%
+    integer
   }
   \item{kmax}{
     a numeric vector
@@ -58,7 +56,6 @@ neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
     updating. Currently supported is \code{"Ax"}, in
     which case the matrix \code{A} be specified. See
     examples.
-
 
   }
   \item{A}{
@@ -100,8 +97,10 @@ neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
 \author{
   Maintainer: Enrico Schumann <es@enricoschumann.net>
 }
-\seealso{
-  \code{\link[NMOF]{TAopt}}
+\seealso{%
+  implementations of algorithms of the local-search family, such as
+  Simulated Annealing (\code{\link[NMOF]{SAopt}} in \pkg{NMOF}) or
+  Threshold Accepting (\code{\link[NMOF]{TAopt}} in \pkg{NMOF})
 }
 \examples{
 ## a LOGICAL neighbourhood

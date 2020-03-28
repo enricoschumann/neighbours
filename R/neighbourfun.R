@@ -125,40 +125,56 @@ neighbourfun <- function(min = 0,
     if (type == "logical") {
 
         if (missing(stepsize))
-            stepsize <- 1
+            stepsize <- 1L
 
+        .body <- quote({
+            i <- sample.int(length, stepsize)
+            x[i] <- !x[i]
+            x
+        })
         if (is.null(kmin) && is.null(kmax)) {
 
-            ## no constraints on number of TRUE values
-            if (!is.null(length)) {
-
-                function(x, ...) {
-                    i <- sample.int(length, stepsize)
-                    x[i] <- !x[i]
-                    x
-                }
-
-            } else {
-
-                function(x, ...) {
-                    i <- sample.int(length(x), stepsize)
-                    x[i] <- !x[i]
-                    x
-                }
-
+            if (is.null(length)) {
+                .body[[2]] <- .sub(.body[[2]],
+                                   list(length = quote(length(x)),
+                                        stepsize = stepsize))
+            } else if (!isTRUE(active)) {
+                .body[[2]] <- .sub(.body[[2]],
+                                   list(length = sum(active)))
+                .body <- .sub(.body,
+                              list(x = quote(x[active])))
             }
+            ans <- function(x, ...) {}
+            body(ans) <- .body
+            return(ans)
 
 
         } else if (!is.null(kmin) && !is.null(kmax) && kmin == kmax) {
 
             ## logical with constant number of TRUE values
 
-            function(x, ...) {
-                true  <- which( x)
-                false <- which(!x)
-                x[true [sample.int(length( true), size = stepsize)]] <- FALSE
-                x[false[sample.int(length(false), size = stepsize)]] <- TRUE
-                x
+            if (!is.null(active)) {
+
+                function(x, ...) {
+                    xx <- x[active]
+                    true  <- which( xx)
+                    false <- which(!xx)
+                    xx[true [sample.int(length( true), size = stepsize)]] <- FALSE
+                    xx[false[sample.int(length(false), size = stepsize)]] <- TRUE
+                    x[active] <- xx
+                    x
+                }
+
+
+
+            } else {
+                function(x, ...) {
+                    true  <- which( x)
+                    false <- which(!x)
+                    x[true [sample.int(length( true), size = stepsize)]] <- FALSE
+                    x[false[sample.int(length(false), size = stepsize)]] <- TRUE
+                    x
+                }
             }
 
         } else if (!is.null(kmin) && !is.null(kmax) && kmin < kmax) {
@@ -242,7 +258,7 @@ random_vector <- function(length,
                           max = 1,
                           kmin = NULL,
                           kmax = NULL,
-                          sum = TRUE,
+                          sum = NULL,
                           type = "numeric",
                           n = 1,
                           ...) {
@@ -276,14 +292,18 @@ random_vector <- function(length,
         stopifnot(min <= max)
 
         if (is.null(kmin) && is.null(kmax)) {
-            ans <- runif(length*n, min=min, max=max)
-            dim(ans) <- c(length, n)
+            if (n == 1) {
+                ans <- runif(length, min = min, max = max)
+            } else {
+                ans <- runif(length*n, min = min, max = max)
+                dim(ans) <- c(length, n)
+            }
         } else {
             if (is.null(kmin))
                 kmin <- 0
             if (is.null(kmax))
                 kmax <- length
-            ans <- runif(length*n, min=min, max=max)
+            ans <- runif(length*n, min = min, max = max)
             dim(ans) <- c(length, n)
             for (j in seq_len(n)) {
                 if (kmin == kmax)

@@ -1,11 +1,15 @@
+2020-03-28  Enrico Schumann  <es@enricoschumann.net>
+
+        * vignettes/neighbours.Rnw: add vignette
+
 2019-12-12  Enrico Schumann  <es@enricoschumann.net>
 
-	* R/neighbourfun.R (neighbourfun,random_vector):
-	rename argument 'n' => 'length'
-	(random_vector): argument 'n' now stands for the
-	number of random vectors to draw; the vectors will
-	be the columns of a matrix of dimension 'length'
-	times 'n'
+        * R/neighbourfun.R (neighbourfun,random_vector):
+        rename argument 'n' => 'length'
+        (random_vector): argument 'n' now stands for the
+        number of random vectors to draw; the vectors will
+        be the columns of a matrix of dimension 'length'
+        times 'n'
 
 2019-11-14  Enrico Schumann  <es@enricoschumann.net>
 
