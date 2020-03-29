@@ -19,7 +19,7 @@ compare_vectors(..., sep = "")
 }
 \details{
 
-  Very experimental.
+  The function is still exp
 
 }
 \value{
@@ -34,9 +34,15 @@ compare_vectors(..., sep = "")
   Enrico Schumann
 }
 \seealso{
-  \code{\link{random_vector}}
+  \code{\link{neighbourfun}}
 }
 \examples{
-## TODO
-1+1
+x <- runif(5) > 0.5
+nb <- neighbourfun(type = "logical")
+
+compare_vectors(x, nb(x))
+## 10011
+## 10010
+##     ^
+## The vectors differ in  1  place.
 }

@@ -2,5 +2,4 @@ importFrom("stats", "runif")
 
 export("neighbourfun",
        "neighborfun",
-       "random_vector",
        "compare_vectors")
