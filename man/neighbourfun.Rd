@@ -22,24 +22,26 @@ neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
              A = NULL, ...)
 }
 \arguments{
-  \item{min}{a numeric vector
+  \item{min}{a numeric vector. A scalar is recycled to \code{length}.
   }
-  \item{max}{a numeric vector
+  \item{max}{a numeric vector. A scalar is recycled to \code{length}.
   }
-  \item{kmin}{%
-    integer
+  \item{kmin}{integer
   }
-  \item{kmax}{
-    a numeric vector
+  \item{kmax}{a numeric vector
   }
-  \item{stepsize}{
-    numeric
+  \item{stepsize}{numeric. For numeric neighbourhoods, the (average)
+    stepsize. For logical neighbourhoods, the number of elements that
+             are changed.
   }
   \item{sum}{
-    numeric
+    logical or numeric. If specified and of length 1, only zero-sum
+    changes will be applied to a solution (i.e. the sum over all
+    elements in a solution remains unchanged).
+    
   }
   \item{random}{
-    logical
+    logical. Should the stepsize be random or fixed?
   }
   \item{active}{
 
@@ -71,9 +73,9 @@ neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
     other arguments
   }
 }
-\details{
-
-  The function returns a closure.
+\details{The function returns a closure with arguments \code{x}
+  and \code{...}, which can be used for local-search
+  algorithms.
 
   \code{neighborfun} is an alias for \code{neighbourfun}.
 

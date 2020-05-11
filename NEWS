@@ -1,4 +1,11 @@
-v0.1-0  (2019-??-??; not yet released)
+v0.1-0  (2020-04-16)
 
-  o ...
+  o Initial release.  The package provides a function
+    neighbourfun() that constructs neighbourhood
+    functions for local-search algorithms.  Supported
+    are numeric and logical solutions.  The algorithms
+    were originally created for portfolio-optimisation
+    applications, but can be used for other models as
+    well.  The package also provides a helper function
+    for comparing solutions.
 

@@ -5,7 +5,7 @@
 \usepackage{libertine}
 \usepackage[scaled=0.9]{inconsolata}
 \usepackage[T1]{fontenc}
-\renewcommand*\familydefault{\sfdefault} 
+\renewcommand*\familydefault{\sfdefault}
 \usepackage{amsmath,amstext}
 \usepackage{hyperref}
 \usepackage{natbib}
@@ -39,73 +39,314 @@ pv <- gsub("(.*)[.](.*)", "\\1-\\2", pv)
 \noindent \url{es@enricoschumann.net}\\
 \bigskip
 
+\noindent Local-search algorithms proceed through the solution
+space by randomly selecting new solutions that are
+close to the original solutions. Such a solution close
+to the original one is called a neighbour solution.
+The function \texttt{neighbourfun} constructs a
+neighbourhood function, i.e. a function that maps a
+given solution to randomly-chosen neighbour.
+
+
+<<package-seed>>=
+library("neighbours")
+set.seed(347234)
+@
+
+\noindent In the examples that follow, we will use a
+simple optimisation function.
+
+<<LSopt>>=
+LSopt <- if (requireNamespace("NMOF")) {
+             NMOF::LSopt
+         } else
+             function(OF, algo = list(), ...) {
+                 xc  <- algo$x0
+                 xcF <- OF(xc, ...)
+                 for (s in seq_len(algo$nS)) {
+                     xn <- algo$neighbour(xc, ...)
+                     xnF <- OF(xn, ...)
+                     if (xnF <= xcF) {
+                         xc  <- xn
+                         xcF <- xnF
+                     }
+                 }
+                 list(xbest = xc, OFvalue = xcF)
+             }
+@
 
 \section*{Selecting elements of a list}
 
-<<>>=
-library("neighbours")
-LSopt. <- function(OF, algo = list(), ...) {
-    xc  <- algo$x0
-    xcF <- OF(xc, ...)
-    for (s in seq_len(algo$nS)) {
-        xn <- algo$neighbour(xc, ...)
-        xnF <- OF(xn, ...)
-        if (xnF <= xcF) {
-            xc  <- xn
-            xcF <- xnF
-        }
-    }
-    list(xbest = xc, OFvalue = xcF)
-}
-@ 
 
-<<>>=
+We are given a numeric vector~$y$, and also a
+matrix~$X$, which has as many rows as $y$ has elements.
+The aim now is to find a subset of columns of~$X$ whose
+average is as weakly correlated with $y$ as possible.
+Let us create random data.
 
-## a LOGICAL neighbourhood
+<<data>>=
+ny <- 50
+nx <- 1000
+y <- rnorm(ny)
+X <- array(rnorm(ny * nx), dim = c(ny, nx))
+@
+
+We'll try a (stochastic) Local Search to compute a
+solution.  There may be other, perhaps better
+heuristics for the job. But a Local Search will compute
+a good solution (as we will see), and it is simple,
+which is a good idea for an example.  For a tutorial on
+Local Search; see \citet[Chapter~13]{Gilli2019}.
+
+
+Suppose we want a solution to include between 10 and
+20~columns.  A possible solution would be this one.
+<<x0>>=
+x0 <- logical(nx)
+x0[1:15] <- TRUE
+head(x0, 20)
+@
+
+We write an objective function to compute the actual
+quality of the solution \texttt{x0}.
+<<objective-fun>>=
+column_cor <- function(x, X, y)
+    cor(rowMeans(X[, x]), y)
+@
+
+We evaluate the solution.
+<<>>=
+column_cor(x0, X, y)
+@
+
+To run a Local Search, we need a neighbourhood function.
+Calling \texttt{neighbourfun} will create such a function,
+and it will bind the parameters to this function.
+<<nb>>=
+nb <- neighbourfun(type = "logical", kmin = 10, kmax = 20)
+nb
+@
+
+
+It remains to run the Local Search.
+<<LSopt-run>>=
+sol.ls <- LSopt(column_cor,
+                list(x0 = x0,
+                     neighbour = nb,
+                     nI = 1000,
+                     printBar = FALSE),
+                X = X, y = y)
+@
+
+Let us evaluate the final solution.
+<<>>=
+column_cor(sol.ls$xbest, X, y)
+@
+
+<<fig=true, width = 5.5, height = 4>>=
+par(mfrow = c(1, 2), las = 1, bty = "n",
+    mar = c(3, 3, 1, 0.5), tck = 0.02, cex = 0.7,
+    mgp = c(1.75, 0.25, 0))
+plot(y, rowMeans(X[, x0]),
+     main = "Initial solution",
+     pch = 19, cex = 0.5,
+     ylim = c(-1, 1),
+     ylab = "Linear combination of columns")
+par(yaxt = "n")
+plot(y, rowMeans(X[, sol.ls$xbest]),
+     main = "Result of local search",
+     pch = 19, cex = 0.5,
+     ylim = c(-1, 1),
+     ylab = "Linear combination of columns")
+@
+
+
+\section*{More restrictions}
+
+The neighbourhood function we used in the previous
+section included constraints: it would not include less
+than 10 or more than 20~\texttt{TRUE} values.  We could
+also set \texttt{kmin} and \texttt{kmax} to the same
+integer, in which case a slightly different implementation will be used.
+
+<<fixed>>=
 x <- logical(8)
 x[1:3] <- TRUE
-     
-N <- neighbourfun(type = "logical", kmin = 3, kmax = 3)
-     
-cat(ifelse(x, "o", "."), "  | initial solution ", sep = "", fill = TRUE)
-for (i in 1:10) {
-    x <- N(x)
-    cat(ifelse(x, "o", "."), sep = "", fill = TRUE)
-}
-@ 
 
-We can add a constraint about elements not to
-touch. Suppose the initial solution is the following:
+nb <- neighbourfun(type = "logical", kmin = 3, kmax = 3)
+nb
+@
+
+\noindent Let us take a few random steps.
+
+<<echo=false>>=
+for (i in 1:10) {
+    if (i == 1)
+        cat(" 0   ", ifelse(x, "o", "."),
+            "  | initial solution: o == TRUE, . == FALSE ",
+            sep = "", fill = TRUE)
+    x <- nb(x)
+    cat(format(i, width = 2), "   ",
+        ifelse(x, "o", "."), sep = "", fill = TRUE)
+}
+@
+
+\noindent We can also add a constraint about elements
+not to touch. Suppose the initial solution is the
+following:
+
 <<>>=
 x <- logical(9)
 x[4:6] <- TRUE
 cat(ifelse(x, "o", "."), sep = "")
 @
 
-Now we restrict the changes that can be made to the
-solution: only elements 3, 4, 6 and 7 may vary.  (They
-are \texttt{active}.)
+\noindent We restrict the changes that can be made to
+the solution: only elements 3, 4, 6 and 7 may vary.
+(They are \texttt{active}.)
 <<restrict>>=
 active <- !logical(length(x))
 active[c(1:2, 5, 8:9)] <- FALSE
 active
+nb <- neighbourfun(type = "logical",
+                   kmin = 3, kmax = 3,
+                   active = active)
 @
 
-Let us try a few iterations.
-<<>>=
-N <- neighbourfun(type = "logical", kmin = 3, kmax = 3,
-                  active = active)
+\noindent Again, let us take a few random steps.  The
+element in the middle remains \texttt{TRUE}, just as
+the first and last element remain \texttt{FALSE}.
 
-for (i in 1:20) {
-    if (i == 1L)
-        cat(ifelse(x, "o", "."), "  | initial solution ", sep = "", fill = TRUE)
-    x <- N(x)
-    cat(ifelse(x, "o", "."), sep = "", fill = TRUE)
+<<echo=false>>=
+for (i in 1:15) {
+    if (i == 1)
+        cat(" 0   ", ifelse(x, "o", "."),
+            "  | initial solution: o == TRUE, . == FALSE ",
+            sep = "", fill = TRUE)
+    x <- nb(x)
+    cat(format(i, width = 2), "   ",
+        ifelse(x, "o", "."), sep = "", fill = TRUE)
 }
-@ 
+@
 
 
+
+\section*{Numeric solutions}
+
+When the argument \texttt{type} is numeric, the
+resulting neighbour function will randomly select
+elements and then add and subtract random numbers from
+those elements.
+
+<<>>=
+x <- rep(1, 5)
+nb <- neighbourfun(min = -Inf, max = Inf, type = "numeric",
+                   stepsize = 0.05, sum = FALSE)
+
+for (i in 1:5) {
+    print(c(Sum = sum(x),x= x))
+    x <- nb(x)
+}
+@
+
+The default for \texttt{sum} is actually TRUE.
+<<>>=
+x <- rep(1, 5)
+nb <- neighbourfun(min = -Inf, max = Inf, type = "numeric",
+                   stepsize = 0.05)
+
+for (i in 1:5) {
+    print(c(Sum = sum(x),x= x))
+    x <- nb(x)
+}
+@
+
+This setting is the default, because it is useful in many applications.
+
+
+\section*{An application: portfolio optimisation}
+
+Suppose we are given
+
+Minimise variance
+<<>>=
+
+@
+
+
+
+\section*{Updating}
+
+
+In many applications, notably when doing data analysis,
+the solution \texttt{x} is used to compute a
+matrix/vector product $Ax$, in which $A$ is a $m$ times
+$n$~matrix, and $x$ is of length$n$.
+
+
+If we only change few elements in the solution, we can
+actually update this product and save computing time
+(the longer $x$ is, the more time we can save).
+
+
+Let $x^{\mathrm{c}}$ denote the current solution and
+$x^{\mathrm{n}}$ the neighbour solution. This latter
+solution is produced by adding element-wise the
+sparse vector $x^{\Delta}$ to $x^{\mathrm{c}}$.
+
+\begin{equation*}
+   x^{\mathrm{n}}  = \phantom{A(}x^{\mathrm{c}} + x^{\Delta}
+\end{equation*}
+
+\begin{equation*}
+  Ax^{\mathrm{n}}  = A(x^{\mathrm{c}}+ x^{\Delta}) =
+  \underbrace{\ \ Ax^{\mathrm{c}}\ \ }_{\text{known}} + Ax^{\Delta}
+\end{equation*}
+
+
+
+
+<<num-target>>=
+target <- runif(100)
+
+
+
+deviation <- function(x, target) {
+    xx <- x - target
+    crossprod(xx)
+}
+
+sol <- LSopt(deviation,
+             list(neighbour = neighbourfun(type = "numeric",
+                                           length = 100,
+                                           stepsize = 0.05),
+                  x0 = runif(length(target)),
+                  nI = 50000,
+                  printBar = FALSE),
+             target = target)
+
+data.frame(target[1:10], sol$xbest[1:10])
+
+
+@
+
+
+<<>>=
+x <- runif(5)+0:4
+nb <- neighbourfun(type = "numeric", stepsize = 0.1, min = 0, max = 50)
+plot(rep(1, 5), x, xlim = c(0, 100))
+for (i in 2:100) {
+    x <- nb(x)
+    lines(rep(i, 5), x, type = "p")
+}
+
+@
+
+
+
+\citet{Gentleman2000}
 \citet{Gilli2019}
+
 \bibliographystyle{plainnat}
 \bibliography{neighbours}
 

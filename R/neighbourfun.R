@@ -68,16 +68,15 @@ neighbourfun <- function(min = 0,
         .body <- .sub(.body,
                       list(.stepsize =
                                if (random)
-                                   quote(stepsize * runif(1))
+                                   quote(stepsize * runif(1L))
                                else
                                    stepsize))
-
 
 
         ## [wmin/wmax]
         if (length(wmin) > 1L || length(wmax) > 1L) {
 
-            ## wmin/wmax have length > 1
+            ## wmin or wmax or both have length > 1
             if (length(wmin) == 1L)
                 wmin <- rep(wmin, length(wmax))
             if (length(wmax) == 1L)
@@ -86,9 +85,10 @@ neighbourfun <- function(min = 0,
             if (!isTRUE(active))
                 .body <- .sub(.body, list(wmin = quote(wmin[active]),
                                           wmax = quote(wmax[active])))
+
         } else if (!isFALSE(budget) && length(budget) == 1L) {
 
-            ## wmin/wmax length == 1
+            ## wmin and wmax have length 1: no subsetting
             .body[[7L]] <- quote(
                 stepsize <- min(x[i] - wmin, wmax - x[j], stepsize))
         }
@@ -96,8 +96,7 @@ neighbourfun <- function(min = 0,
 
 
         ## [update]
-        if (is.character(update) &&
-            update == "Ax") {
+        if (is.character(update) && update == "Ax") {
             .body[[10L]] <- quote(
                 attr(x, "Ax") <- attr(x, "Ax") +
                     A[, c(i, j)] %*% c(-stepsize, stepsize))
@@ -111,8 +110,6 @@ neighbourfun <- function(min = 0,
             .body <- .sub(.body, list(x = quote(x[active])))
             .body[[length(.body)]] <- quote(x)
         }
-
-
 
 
 
@@ -166,7 +163,6 @@ neighbourfun <- function(min = 0,
                 }
 
 
-
             } else {
                 function(x, ...) {
                     true  <- which( x)
@@ -202,30 +198,30 @@ neighbourfun <- function(min = 0,
         max.sumL <- 0.4
         if (is.null(kmax))
             kmax <- 33
-        function(w, ...) {
-            k <- sum(abs(w) > 0)
+        function(x, ...) {
+            k <- sum(abs(x) > 0)
             eps <- runif(1)*0.5/100
 
-            to_sell <- w > 0
+            to_sell <- x > 0
             to_buy  <- if (k == kmax)
-                           w > 0 & w < wmax2
+                           x > 0 & x < wmax2
                        else
-                           w < wmax2
+                           x < wmax2
             to_sell <- which(to_sell)
             to_buy  <- which(to_buy)
-            sumL <- sum(w[w > wmax])
+            sumL <- sum(x[x > wmax])
 
             i <- to_sell[sample.int(length(to_sell), size = 1L)]
             j <- to_buy [sample.int(length(to_buy),  size = 1L)]
-            eps <- if (w[j] < wmax)
-                       min(eps, wmax  - w[j], w[i])
-                   else if (w[j] == wmax)
-                       min(eps, wmax2 - w[j], w[i], max(0, max.sumL - sumL - w[j]))
+            eps <- if (x[j] < wmax)
+                       min(eps, wmax  - x[j], x[i])
+                   else if (x[j] == wmax)
+                       min(eps, wmax2 - x[j], x[i], max(0, max.sumL - sumL - x[j]))
                    else
-                       min(eps, wmax2 - w[j], w[i], max(0, max.sumL - sumL))
-            w[i] <- w[i] - eps
-            w[j] <- w[j] + eps
-            w
+                       min(eps, wmax2 - x[j], x[i], max(0, max.sumL - sumL))
+            x[i] <- x[i] - eps
+            x[j] <- x[j] + eps
+            x
         }
     } else
         stop("no matches")
