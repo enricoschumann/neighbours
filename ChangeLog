@@ -1,3 +1,8 @@
+2020-05-12  Enrico Schumann  <es@enricoschumann.net>
+
+	* R/neighbourfun.R (compare_vectors): new
+	argument 'diff.char'
+
 2020-03-28  Enrico Schumann  <es@enricoschumann.net>
 
         * vignettes/neighbours.Rnw: add vignette

@@ -7,7 +7,7 @@
   Compare numeric or logical vectors.
 }
 \usage{
-compare_vectors(..., sep = "")
+compare_vectors(..., sep = "", diff.char = "|")
 }
 \arguments{
   \item{\dots}{
@@ -16,15 +16,23 @@ compare_vectors(..., sep = "")
   \item{sep}{
     a string
   }
+  \item{diff.char}{
+    a single character
+  }
 }
 \details{
 
-  The function is still exp
+  The function compares vectors with one another. The
+  main purpose is to print a useful representation of
+  differences (and return differences, usually
+  invisibly).
+
+  The function is still experimental and will likely change.
 
 }
 \value{
 
-  typically a list
+  depends on how the function is called; typically a list
 
 }
 %% \references{
@@ -41,8 +49,15 @@ x <- runif(5) > 0.5
 nb <- neighbourfun(type = "logical")
 
 compare_vectors(x, nb(x))
-## 10011
-## 10010
-##     ^
+## 01010
+##  |   
+## 00010
 ## The vectors differ in  1  place.
+
+nb <- neighbourfun(type = "logical", stepsize = 2)
+compare_vectors(x, nb(x))
+## 01010
+## |   |
+## 11011
+## The vectors differ in  2  places.
 }

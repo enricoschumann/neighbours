@@ -39,13 +39,13 @@ pv <- gsub("(.*)[.](.*)", "\\1-\\2", pv)
 \noindent \url{es@enricoschumann.net}\\
 \bigskip
 
-\noindent Local-search algorithms proceed through the solution
-space by randomly selecting new solutions that are
-close to the original solutions. Such a solution close
-to the original one is called a neighbour solution.
-The function \texttt{neighbourfun} constructs a
-neighbourhood function, i.e. a function that maps a
-given solution to randomly-chosen neighbour.
+\noindent Local-search algorithms proceed through the
+solution space by randomly selecting new solutions that
+are close to the original solutions. Such a new
+solution is called a neighbour solution.  The function
+\texttt{neighbourfun} constructs a neighbourhood
+function, i.e. a function that maps a given solution to a
+randomly-chosen neighbour.
 
 
 <<package-seed>>=
@@ -54,7 +54,8 @@ set.seed(347234)
 @
 
 \noindent In the examples that follow, we will use a
-simple optimisation function.
+simple optimisation algorithm, a (stochastic) Local
+Search.
 
 <<LSopt>>=
 LSopt <- if (requireNamespace("NMOF")) {
@@ -77,7 +78,6 @@ LSopt <- if (requireNamespace("NMOF")) {
 
 \section*{Selecting elements of a list}
 
-
 We are given a numeric vector~$y$, and also a
 matrix~$X$, which has as many rows as $y$ has elements.
 The aim now is to find a subset of columns of~$X$ whose
@@ -87,8 +87,8 @@ Let us create random data.
 <<data>>=
 ny <- 50
 nx <- 1000
-y <- rnorm(ny)
-X <- array(rnorm(ny * nx), dim = c(ny, nx))
+y <- runif(ny)
+X <- array(runif(ny * nx), dim = c(ny, nx))
 @
 
 We'll try a (stochastic) Local Search to compute a
@@ -150,7 +150,7 @@ par(mfrow = c(1, 2), las = 1, bty = "n",
 plot(y, rowMeans(X[, x0]),
      main = "Initial solution",
      pch = 19, cex = 0.5,
-     ylim = c(-1, 1),
+     ylim = c(0, 1),
      ylab = "Linear combination of columns")
 par(yaxt = "n")
 plot(y, rowMeans(X[, sol.ls$xbest]),

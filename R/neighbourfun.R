@@ -229,23 +229,45 @@ neighbourfun <- function(min = 0,
 
 neighborfun <- neighbourfun
 
-compare_vectors <- function(..., sep = "") {
+compare_vectors <- function(...,
+                            sep = "",
+                            diff.char = "|") {
+
+    ## TODO make arguments
+    compare1 <- TRUE  ## compare all solutions with the 1st
+    rows <- TRUE      ## print rows
+    FALSE.TRUE <- c("0", "1")
+
+
     vecs <- list(...)
-    if (length(unique(lengths(vecs))) != 1)
+    len.x <- length(vecs)
+    if (length(unique(lengths(vecs))) != 1L)
         stop("vectors have different lengths")
     if (mode(vecs[[1L]]) == "logical") {
-        do.call(
-            "cat",
-            c(list(as.integer(vecs[[1]]),
-                   "\n",
-                   as.integer(vecs[[2]]),
-                   "\n",
-                   ifelse(vecs[[1L]] == vecs[[2L]], " ", "^"),
-                   "\n", sep = "")))
-        d <- sum(vecs[[1]] != vecs[[2]])
-        message("The vectors differ in  ", d, "  place",
-                if (d != 1) "s", ".")
-        invisible(d)
+        if (len.x == 1) {
+
+            outp <- rep(FALSE.TRUE[1L], length(vecs[[1L]]))
+            outp[ vecs[[1L]] ] <- FALSE.TRUE[2L]
+            cat(outp, "\n", sep = "")
+            invisible(0L)
+
+        } else if (len.x == 2) {
+
+            do.call(
+                "cat",
+                c(list(as.integer(vecs[[1]]), "\n",
+                       if (nchar(diff.char)) ifelse(vecs[[1L]] == vecs[[2L]], " ", diff.char),
+                       if (nchar(diff.char)) "\n",
+                       as.integer(vecs[[2]]), "\n",
+                       sep = "")))
+            d <- sum(vecs[[1]] != vecs[[2]])
+
+            message("The vectors differ in  ", d, "  place",
+                    if (d != 1) "s", ".")
+            invisible(d)
+        } else
+            stop("not yet supported")
+
     }
 }
 
