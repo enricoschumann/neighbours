@@ -1,6 +1,6 @@
 %% \VignetteIndexEntry{Neighbourhood functions}
 \documentclass[a4paper,11pt]{article}
-\usepackage[left = 3cm, top = 2cm, bottom = 2cm, right = 4cm]{geometry}
+\usepackage[left = 3cm, top = 2cm, bottom = 2cm, right = 4cm, marginparwidth=3.5cm]{geometry}
 \usepackage[noae,nogin]{Sweave}
 \usepackage{libertine}
 \usepackage[scaled=0.9]{inconsolata}
@@ -11,6 +11,7 @@
 \usepackage{natbib}
 \usepackage{xcolor}
 \usepackage{framed}
+\usepackage{ragged2e}
 \usepackage[hang]{footmisc}
 \definecolor{grau2}{rgb}{.2,.2,.2}
 \definecolor{grau7}{rgb}{.7,.7,.7}
@@ -50,12 +51,14 @@ randomly-chosen neighbour.
 
 <<package-seed>>=
 library("neighbours")
-set.seed(347234)
+set.seed(34734)
 @
 
 \noindent In the examples that follow, we will use a
 simple optimisation algorithm, a (stochastic) Local
-Search.
+Search.  If package \texttt{NMOF} is available,
+function \texttt{LSopt} is used; otherwise, we use a
+simple replacement (taken from \citealp[Chapter~13]{Gilli2019}).
 
 <<LSopt>>=
 LSopt <- if (requireNamespace("NMOF")) {
@@ -124,11 +127,10 @@ Calling \texttt{neighbourfun} will create such a function,
 and it will bind the parameters to this function.
 <<nb>>=
 nb <- neighbourfun(type = "logical", kmin = 10, kmax = 20)
-nb
 @
 
+\noindent It remains to run the Local Search.
 
-It remains to run the Local Search.
 <<LSopt-run>>=
 sol.ls <- LSopt(column_cor,
                 list(x0 = x0,
@@ -143,21 +145,25 @@ Let us evaluate the final solution.
 column_cor(sol.ls$xbest, X, y)
 @
 
-<<fig=true, width = 5.5, height = 4>>=
+We may also visualise the initial and the final
+solution.
+
+<<fig=true, width = 5, height = 3.2>>=
 par(mfrow = c(1, 2), las = 1, bty = "n",
     mar = c(3, 3, 1, 0.5), tck = 0.02, cex = 0.7,
     mgp = c(1.75, 0.25, 0))
 plot(y, rowMeans(X[, x0]),
      main = "Initial solution",
      pch = 19, cex = 0.5,
-     ylim = c(0, 1),
+     ylim = c(0.2, 0.8),
      ylab = "Linear combination of columns")
 par(yaxt = "n")
 plot(y, rowMeans(X[, sol.ls$xbest]),
      main = "Result of local search",
      pch = 19, cex = 0.5,
-     ylim = c(-1, 1),
+     ylim = c(0.2, 0.8),
      ylab = "Linear combination of columns")
+axis(4)
 @
 
 
@@ -165,31 +171,40 @@ plot(y, rowMeans(X[, sol.ls$xbest]),
 
 The neighbourhood function we used in the previous
 section included constraints: it would not include less
-than 10 or more than 20~\texttt{TRUE} values.  We could
+than 10 or more than 20~\texttt{TRUE} values. Note that
+the neighbourhood function required a valid \texttt{x}
+as input.%
+\marginpar{\footnotesize\RaggedRight For invalid
+  \texttt{x}, the result is undefined.  Neighbourhood
+  functions should not check the validity of their
+  inputs, because of speed: } %
+
+We could
 also set \texttt{kmin} and \texttt{kmax} to the same
-integer, in which case a slightly different implementation will be used.
+integer, so the number of \texttt{TRUE} values is
+fixed.  (In this case, a slightly-different
+neighbourhood algorithm will be used.)
 
 <<fixed>>=
 x <- logical(8)
 x[1:3] <- TRUE
 
 nb <- neighbourfun(type = "logical", kmin = 3, kmax = 3)
-nb
 @
 
-\noindent Let us take a few random steps.
+% \noindent Let us take a few random steps.
 
-<<echo=false>>=
-for (i in 1:10) {
-    if (i == 1)
-        cat(" 0   ", ifelse(x, "o", "."),
-            "  | initial solution: o == TRUE, . == FALSE ",
-            sep = "", fill = TRUE)
-    x <- nb(x)
-    cat(format(i, width = 2), "   ",
-        ifelse(x, "o", "."), sep = "", fill = TRUE)
-}
-@
+% <<echo=false>>=
+% for (i in 1:10) {
+%     if (i == 1)
+%         cat(" 0   ", ifelse(x, "o", "."),
+%             "  | initial solution: o == TRUE, . == FALSE ",
+%             sep = "", fill = TRUE)
+%     x <- nb(x)
+%     cat(format(i, width = 2), "   ",
+%         ifelse(x, "o", "."), sep = "", fill = TRUE)
+% }
+% @
 
 \noindent We can also add a constraint about elements
 not to touch. Suppose the initial solution is the
@@ -202,16 +217,12 @@ cat(ifelse(x, "o", "."), sep = "")
 @
 
 \noindent We restrict the changes that can be made to
-the solution: only elements 3, 4, 6 and 7 may vary.
-(They are \texttt{active}.)
-<<restrict>>=
-active <- !logical(length(x))
-active[c(1:2, 5, 8:9)] <- FALSE
-active
-nb <- neighbourfun(type = "logical",
-                   kmin = 3, kmax = 3,
-                   active = active)
-@
+the solution: the first three elements must not be
+touched; only the remaining elements may change. (They
+are \texttt{active}.)  <<restrict>>= active <-
+!logical(length(x)) active[1:3] <- FALSE active nb <-
+neighbourfun(type = "logical", kmin = 3, kmax = 3,
+active = active) @
 
 \noindent Again, let us take a few random steps.  The
 element in the middle remains \texttt{TRUE}, just as
@@ -249,7 +260,8 @@ for (i in 1:5) {
 }
 @
 
-The default for \texttt{sum} is actually TRUE.
+\noindent The default for \texttt{sum} is actually TRUE.
+
 <<>>=
 x <- rep(1, 5)
 nb <- neighbourfun(min = -Inf, max = Inf, type = "numeric",

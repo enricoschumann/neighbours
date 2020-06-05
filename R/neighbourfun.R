@@ -93,6 +93,11 @@ neighbourfun <- function(min = 0,
                 stepsize <- min(x[i] - wmin, wmax - x[j], stepsize))
         }
 
+        ## [active]
+        if (!isTRUE(active)) {
+            .body <- .sub(.body, list(x = quote(x[active])))
+            .body[[length(.body)]] <- quote(x)
+        }
 
 
         ## [update]
@@ -105,11 +110,6 @@ neighbourfun <- function(min = 0,
 
 
 
-        ## [active]
-        if (!isTRUE(active)) {
-            .body <- .sub(.body, list(x = quote(x[active])))
-            .body[[length(.body)]] <- quote(x)
-        }
 
 
 
@@ -244,31 +244,22 @@ compare_vectors <- function(...,
     if (length(unique(lengths(vecs))) != 1L)
         stop("vectors have different lengths")
     if (mode(vecs[[1L]]) == "logical") {
-        if (len.x == 1) {
-
-            outp <- rep(FALSE.TRUE[1L], length(vecs[[1L]]))
-            outp[ vecs[[1L]] ] <- FALSE.TRUE[2L]
-            cat(outp, "\n", sep = "")
-            invisible(0L)
-
-        } else if (len.x == 2) {
-
-            do.call(
-                "cat",
-                c(list(as.integer(vecs[[1]]), "\n",
-                       if (nchar(diff.char)) ifelse(vecs[[1L]] == vecs[[2L]], " ", diff.char),
-                       if (nchar(diff.char)) "\n",
-                       as.integer(vecs[[2]]), "\n",
-                       sep = "")))
-            d <- sum(vecs[[1]] != vecs[[2]])
-
-            message("The vectors differ in  ", d, "  place",
-                    if (d != 1) "s", ".")
-            invisible(d)
-        } else
-            stop("not yet supported")
-
+        d <- numeric(length(vecs) - 1L)
+        cat(as.integer(vecs[[1]]), "\n", sep = "")
+        if (len.x > 1L) {
+            for (i in 2:length(vecs)) {
+                if (nchar(diff.char))
+                    cat(ifelse(vecs[[i - 1L]] == vecs[[i]], " ", diff.char),
+                        "\n", sep = "")
+                cat(as.integer(vecs[[i]]), "\n", sep = "")
+                d[i - 1L] <- sum(vecs[[i - 1L]] != vecs[[i]])
+            }
+            if (len.x == 2L)
+                message("The vectors differ in  ", d, "  place",
+                        if (d != 1) "s", ".")
+        }
     }
+    invisible(d)
 }
 
 random_vector <- function(length,
