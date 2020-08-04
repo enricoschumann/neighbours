@@ -13,6 +13,7 @@
 \usepackage{framed}
 \usepackage{ragged2e}
 \usepackage[hang]{footmisc}
+\setlength\parindent{0pt}
 \definecolor{grau2}{rgb}{.2,.2,.2}
 \definecolor{grau7}{rgb}{.7,.7,.7}
 \DefineVerbatimEnvironment{Sinput}{Verbatim}{}
@@ -40,18 +41,15 @@ pv <- gsub("(.*)[.](.*)", "\\1-\\2", pv)
 \noindent \url{es@enricoschumann.net}\\
 \bigskip
 
-\noindent Local-search algorithms move through the
-solution space by randomly selecting new solutions that
-are close to the original solutions. Such a new
-solution is called a neighbour solution.  The function
-\texttt{neighbourfun} constructs a neighbourhood
-function, i.e. a function that maps a given solution to a
-randomly-chosen neighbour.
-
-
+\noindent The function \texttt{neighbourfun} constructs
+a neighbourhood function, i.e. a function that maps a
+given solution to a randomly-chosen neighbour.  This
+vignette provides several examples how the function can
+be used.  We start by attaching the package and setting
+a seed.
 <<package-seed>>=
 library("neighbours")
-set.seed(34734)
+set.seed(347343)
 @
 
 \noindent In the examples that follow, we will use a
@@ -80,65 +78,69 @@ LSopt <- if (requireNamespace("NMOF")) {
              }
 @
 
+
+
 \section*{Example: Selecting elements of a list}
 
-We are given a numeric vector~$y$, and also a
+\noindent We are given a numeric vector~$y$, and also a
 matrix~$X$, which has as many rows as~$y$ has elements.
 The aim now is to find a subset of columns of~$X$ whose
 average is as lowly correlated with $y$ as possible.
 Let us create random data.
 
 <<data>>=
-ny <- 50
-nx <- 2000
+ny <- 50     ## length of y
+nx <- 500    ## number of columns of X
 y <- runif(ny)
 X <- array(runif(ny * nx), dim = c(ny, nx))
 @
 
-We'll try a (stochastic) Local Search to compute a
+\noindent We'll try a (stochastic) Local Search to compute a
 solution.  There may be other, perhaps better
-heuristics for the job. But a Local Search will compute
-a good solution (as we will see), and it is simple,
-which is a good idea for an example.  For a tutorial on
-Local Search; see \citet[Chapter~13]{Gilli2019}.
+heuristics for the job.  But a Local Search will
+compute a good solution (as we will see), and it is
+simple, which is a good idea for an example.  See
+\citet[Chapter~13]{Gilli2019} for a tutorial on Local
+Search.
 
 
-Suppose we want a solution to include between 10 and
-20~columns.  A possible solution would be this one.
+\noindent Suppose we want a solution to include between
+10 and 20~columns.  A valid candidate solution would be
+the first 15~columns of~$X$.
 <<x0>>=
 x0 <- logical(nx)
 x0[1:15] <- TRUE
 head(x0, 20)
 @
 
-\noindent We write an objective function to compute the actual
+\noindent It's probably not a very good solution.
+We write an objective function to compute the actual
 quality of the solution \texttt{x0}.
 <<objective-fun>>=
 column_cor <- function(x, X, y)
     cor(rowMeans(X[, x]), y)
 @
 
-\noindent We evaluate the quality of~\texttt{x0}.
+\noindent With this objective function we can evaluate
+the quality of~\texttt{x0}.
 <<>>=
 column_cor(x0, X, y)
 @
 
 \noindent To run a Local Search, we need a
 neighbourhood function.  Calling \texttt{neighbourfun}
-will create such a function, and it will bind the
-parameters to this function.%
-\marginpar{\footnotesize\RaggedRight
-  \citet{Gentleman2000} show that \textsf{R}'s scoping
-  rules are particularly convenient for
-  optimisation.} %
-
-
+will create such a function, taking as inputs our
+constraints:$^\dagger$ at least~10, no more than 20~columns.%
+\marginpar{\footnotesize\RaggedRight$^\dagger$\,\citet{Gentleman2000}
+  show that \textsf{R}'s scoping rules are particularly
+  convenient for creating the ingredients of
+  optimisation, such as the objective function or, as
+  here, a neighbourhood function.} %
 <<nb>>=
 nb <- neighbourfun(type = "logical", kmin = 10, kmax = 20)
 @
 
 \noindent It remains to run the Local Search.
-
 <<LSopt-run>>=
 sol.ls <- LSopt(column_cor,
                 list(x0 = x0,
@@ -153,8 +155,9 @@ Let us evaluate the final solution.
 column_cor(sol.ls$xbest, X, y)
 @
 
-We may also visualise the initial and the final
-solution.
+
+We can also visualise the initial and the final
+solution.  The negative correlation is clearly visible.
 
 <<fig=true, width = 5, height = 3.2>>=
 par(mfrow = c(1, 2), las = 1, bty = "n",
@@ -167,9 +170,9 @@ plot(y, rowMeans(X[, x0]),
      ylab = "Linear combination of columns")
 par(yaxt = "n")
 plot(y, rowMeans(X[, sol.ls$xbest]),
-     main = "Result of local search",
+     main = "Result of Local Search",
      pch = 19, cex = 0.5,
-     ylim = c(0.2, 0.8),
+     ylim = c(0.3, 0.7),
      ylab = "Linear combination of columns")
 axis(4)
 @
@@ -181,48 +184,45 @@ The neighbourhood function we used in the previous
 section included constraints: it would include no fewer
 than 10 or no more than 20~\texttt{TRUE} values. Note
 that the neighbourhood function required a valid
-\texttt{x} as input.%
-\marginpar{\footnotesize\RaggedRight For invalid
+\texttt{x} as input.$^\dagger$%
+\marginpar{\footnotesize\RaggedRight$^\dagger$\,For invalid
   \texttt{x}, the result is undefined.  Neighbourhood
   functions should not check the validity of their
   inputs, because of speed: the functions are called
   thousands of times during an optimisation run, and
-  every fraction of second matters.} %
-
+  so every fraction of a second matters.} %
 We may also set \texttt{kmin} and \texttt{kmax} to
 the same integer, so the number of \texttt{TRUE} values
 is fixed.  (In this case, a slightly-different
 neighbourhood algorithm will be used.)
 
 We can also add a constraint about elements not to
-touch. Suppose the initial solution is the following:
+touch. Suppose the initial solution to a model (not the
+example we use previously) is a logical vector  of length~9.
 <<>>=
-x <- logical(9)
+x <- logical(9L)
 x[4:6] <- TRUE
 compare_vectors(x)
 @
 
-\noindent We restrict the changes that can be made to
-the solution: the first three elements must not be
-touched; only the remaining elements may change. (They
-are \texttt{active}.)
+We restrict the changes that can be made to the
+solution: the first three elements must not be touched;
+only the remaining elements may change. (They are
+\texttt{active}.)
 
 <<restrict>>=
-active <- !logical(length(x))
-active[1:3] <- FALSE
+active <- c(rep(FALSE, 3),
+            rep(TRUE, length(x) - 3))
 active
-nb <- neighbourfun(type = "logical", kmin = 3, kmax = 3,
-                   active = active)
+nb <- neighbourfun(type = "logical", kmin = 3, kmax = 3, active = active)
 @
 
-\noindent Again, let us take a few random steps.  The
-element in the middle remains \texttt{TRUE}, just as
-the first and last element remain \texttt{FALSE}.
-
+Let us take a few random steps: the function will never
+touch the first three elements.
 <<echo=false>>=
 xs <- list()
 xs[[1]] <- x
-for (i in 1:15) {
+for (i in 1:10) {
     xs[[length(xs) + 1]] <- x <- nb(x)
 }
 do.call(compare_vectors, xs)
@@ -232,51 +232,72 @@ do.call(compare_vectors, xs)
 
 \section*{Another example: minimising portfolio risk}
 
-When the argument \texttt{type} is set to
-\texttt{numeric}, the resulting neighbour function will
-randomly select elements, and then add and subtract
-typically-small numbers to and from those elements.
-The size of those numbers is controlled by argument
-\texttt{stepsize}, and with argument \texttt{random}
-set to TRUE (the default), the step sizes will vary
-randomly.
-
-
 
 Suppose we are given a matrix \texttt{R} and aim to
 find a vector $x$ such that the variance of the
-elements in~$Rx$ is minimised.  This is common problem
-in finance, in which $R$ could be a matrix of
-asset-price returns, with each column holding the
-returns of one asset, and $x$ a vector of portfolio
+elements in the product~$Rx$ is minimised.  This is
+common problem in finance, in which $R$ could be a
+matrix of asset-price returns, with each column holding
+the returns of one asset, and $x$ a vector of portfolio
 weights.
 
-For this particular goal -- the variance of returns --,
-we can first compute the variance--covariance
-matrix~$\Sigma$ of $R$, and then minimise $x' \Sigma x$.
+We'll solve this problem, as in the previous example,
+with Local Search.  Our solution now is a numeric
+vector~$x$, and we need two functions -- the objective
+function and the neighbourhood function -- to solve it.
 
+Start with the objective function.  For this particular
+goal -- the variance of returns --, we can first
+compute the variance--covariance matrix~$\Sigma$ of
+$R$, and then minimise~$x' \Sigma x$.  That is, we
+could write an objective function as follows:
+<<variance1>>=
+variance <- function(x, S, ...)
+    x %*% S %*% x
+@ 
+(In the code, \texttt{S} stands for the
+variance--covariance matrix $\Sigma$.)
+
+
+An alternative way to
+write the objective function is the following.
 <<>>=
-R <- NMOF::randomReturns(20, 120, 0.03, rho = 0.6)
-S <- cov(R)  ## Sigma
-@
+variance2 <- function(x, R, ...)
+    var(R %*% x)
+@ 
+The disadvantage of this second version is efficiency
+
 
 Suppose we start with an equal-weight portfolio.
 
 <<>>=
+R <- NMOF::randomReturns(20, 120, 0.03, rho = 0.6)
+S <- cov(R)  ## Sigma
 x0 <- rep(1/20, 20)
-@ 
+@
 
-The objective function.
+When the argument \texttt{type} is set to
+\texttt{numeric}, the resulting neighbourhood function
+will randomly select elements, and then add and
+subtract numbers to and from those elements.  The size
+of those numbers is controlled by argument
+\texttt{stepsize}, and with argument \texttt{random}
+set to TRUE (the default), the step sizes will vary
+randomly.  When argument \texttt{sum} is \texttt{TRUE},
+the function will add and subtract from chosen elements
+in such a way that the sum over all elements remains
+unchanged.  (That is a typical restriction in
+portfolio-selection models.)
+
 <<>>=
-variance <- function(x, S, ...)
-    x %*% S %*% x
-variance(x0, S)
+nb <- neighbourfun(type = "numeric", min = 0, max = 0.10,
+                   stepsize = 0.005)
+
 @ 
+The objective function.
 
 We can solve this problem with Local Search.
 <<mv-ls1>>=
-nb <- neighbourfun(type = "numeric", min = 0, max = 0.10,
-                   stepsize = 0.005)
 sol.ls <- LSopt(variance,
                 list(x0 = x0,
                      neighbour = nb,
@@ -286,13 +307,6 @@ sol.ls <- LSopt(variance,
 
 NMOF::minvar(S, wmin = 0, wmax = 0.1)
 @
-
-An alternative, and perhaps more-straightforward way to
-write the objective function is the following.
-<<>>=
-variance2 <- function(x, R, ...)
-    var(R %*% x)
-@ 
 
 When we feed it to \texttt{LSopt}, we arrive at the same solution.
 <<mv-ls2>>=
