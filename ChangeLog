@@ -1,3 +1,7 @@
+2021-09-01  Enrico Schumann  <es@enricoschumann.net>
+
+	* R/neighbourfun.R (ans): add type "permute"
+
 2020-06-05  Enrico Schumann  <es@enricoschumann.net>
 
         * R/neighbourfun.R (compare_vectors): simplify

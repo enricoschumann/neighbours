@@ -118,6 +118,26 @@ neighbourfun <- function(min = 0,
         return(ans)
     }
 
+    if (type == "permute") {
+
+        if (missing(stepsize) || stepsize == 1L)
+            stepsize <- 2L
+
+        if (stepsize == 2L) {
+            ans <- function(x, ...) {
+                ii <- sample.int(length(x), stepsize)
+                x[ii] <- x[ii[2:1]]
+                x
+            }
+        } else {
+            ans <- function(x, ...) {
+                ii <- sample.int(length(x), stepsize)
+                x[ii] <- x[sample.int(ii)]
+                x
+            }
+        }
+        return(ans)
+    }
 
     if (type == "logical") {
 
