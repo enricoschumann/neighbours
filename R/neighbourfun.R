@@ -16,6 +16,10 @@ neighbourfun <- function(min = 0,
     budget <- sum
 
     .sub <- function(e, env) {
+        ## replace a subexpression within e by another
+        ## expression, bound in env. Example:
+        ##    .sub(quote(a + b), list(a = function(x) x + 1))
+        ##    ## => function(x) x + 1 + b
         expr <- substitute(substitute(e2, env),
                            env = list(e2 = e))
         eval(expr)
