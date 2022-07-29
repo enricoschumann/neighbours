@@ -38,7 +38,7 @@ neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
     logical or numeric. If specified and of length 1, only zero-sum
     changes will be applied to a solution (i.e. the sum over all
     elements in a solution remains unchanged).
-    
+
   }
   \item{random}{
     logical. Should the stepsize be random or fixed?
@@ -64,7 +64,7 @@ neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
     a numeric matrix
   }
   \item{type}{
-    string: either \code{"numeric"} or \code{"logical"}
+    string: either \code{"numeric"}, \code{"logical"} or \code{"permute"}
   }
   \item{length}{
     integer: the length of a vector
@@ -142,11 +142,9 @@ all.equal(A \%*\% x, attr(x, "Ax"))
 
 
 
-\donttest{
-## a useful way to store/specify parameters
-settings <- list(...)
-do.call(neighbourfun, settings)
-}
+## ## a useful way to store/specify parameters
+## settings <- list(...)
+## do.call(neighbourfun, settings)
 }
 
 \keyword{ optimize }

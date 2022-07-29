@@ -28,43 +28,89 @@ neighbourfun <- function(min = 0,
     if (type == "numeric") {
 
         if (isTRUE(budget) || is.numeric(budget) && length(budget) == 1L) {
+
+            ## NOTE 'budget' is a scalar, default is 1. Two
+            ##      elements are selected: one is increased,
+            ##      the other is decreased.
+
             .body <- quote({
-                decrease <- which(x > wmin)
-                increase  <- which(x < wmax)
+
+                ## NOTE If wmin/wmax are -Inf/Inf, then all
+                ##      elements could be selected.
+                decrease <- which((x > wmin)[active])
+                increase  <- which((x < wmax)[active])
+
+                ## NOTE More than two elements could be selected.
+                ##      It might also be necessary to check if
+                ##      enough elements are available:
+                ##      min(size, length(decrease), length(icnrease))
                 i <- decrease[sample.int(length(decrease), size = 1L)]
-                j <- increase[sample.int(length(increase),  size = 1L)]
+                j <- increase[sample.int(length(increase), size = 1L)]
                 stepsize <- .stepsize
                 stepsize <- min(x[i] - wmin[i], wmax[j] - x[j], stepsize)
                 x[i] <- x[i] - stepsize
                 x[j] <- x[j] + stepsize
                 x
             })
-        } else if (is.numeric(budget) && length(budget) == 2L) {
-            .body <- quote({
-                i <- sample.int(length(x), size = 1L)
-                stepsize <- sample(c(-1, 1), size = 1) * .stepsize
-                stepsize <-
-                    if (stepsize < 0)
-                        max(wmin - x[i], stepsize, budget[1L] - sum(x))
-                    else
-                        min(wmax - x[i], stepsize, budget[2L] - sum(x))
 
-                x[i] <- x[i] + stepsize
-                x
-            })
-        } else if (isFALSE(budget)) {
+            if (length(wmin) == 1) {
+
+                ## if 'wmin' is a scalar, there is no
+                ## need for subsetting
+
+                ## .body[[7]]
+                ## ==>  stepsize <- min(x[i] - wmin[i], wmax[j] - x[j], stepsize)
+                ## .body[[7]][[3]]
+                ## ==>  min(x[i] - wmin[i], wmax[j] - x[j], stepsize)
+                ## .body[[7]][[3]][[2]]
+                ## ==>  x[i] - wmin[i]
+                ## .body[[7]][[3]][[2]][[3]]
+                ## ==>  wmin[i]
+                .body[[7]][[3]][[2]][[3]] <- wmin
+            }
+
+            if (length(wmax) == 1) {
+
+                ## if 'wmax' is a scalar, there is no
+                ## need for subsetting
+
+                ## .body[[7]]
+                ## ==>  stepsize <- min(x[i] - wmin[i], wmax[j] - x[j], stepsize)
+                ## .body[[7]][[3]]
+                ## ==>  min(x[i] - wmin[i], wmax[j] - x[j], stepsize)
+                ## .body[[7]][[3]][[3]]
+                ## ==>  wmax[j] - x[j]
+                ## .body[[7]][[3]][[3]][[2]]
+                ## ==>  wmax[j]
+                .body[[7]][[3]][[3]][[2]] <- wmax
+            }
+
+        } else if (isFALSE(budget) || is.numeric(budget) && length(budget) == 2L) {
+
+            ## budget is of length 2 or not defined
+
             .body <- quote({
-                i <- sample.int(length(x), size = 1L)
                 stepsize <- sample(c(-1, 1), size = 1) * .stepsize
-                stepsize <-
-                    if (stepsize < 0) {
-                        max(wmin - x[i], stepsize)
-                    } else {
-                        min(wmax - x[i], stepsize)
-                    }
+                if (stepsize < 0) {
+                    decrease <- which((x > wmin)[active])
+                    i <- decrease[sample.int(length(decrease), size = 1L)]
+                    stepsize <- max(wmin - x[i], stepsize, budget[1L] - sum(x))
+                    ##                                     ^^^^^^^^^^^^^^^^^^^
+                } else {
+                    increase  <- which((x < wmax)[active])
+                    i <- increase[sample.int(length(increase),  size = 1L)]
+                    stepsize <- min(wmax - x[i], stepsize, budget[2L] - sum(x))
+                    ##                                     ^^^^^^^^^^^^^^^^^^^
+                }
                 x[i] <- x[i] + stepsize
                 x
             })
+            if (isFALSE(budget)) {
+                .body[[3]][[3]][[4]][[3]][[4]] <- NULL
+                .body[[3]][[4]][[4]][[3]][[4]] <- NULL
+            }
+        } else {
+            stop("budget must be logical or numeric")
         }
 
 
@@ -78,30 +124,30 @@ neighbourfun <- function(min = 0,
 
 
         ## [wmin/wmax]
-        if (length(wmin) > 1L || length(wmax) > 1L) {
+        ## if (length(wmin) > 1L || length(wmax) > 1L) {
 
-            ## wmin or wmax or both have length > 1
-            if (length(wmin) == 1L)
-                wmin <- rep(wmin, length(wmax))
-            if (length(wmax) == 1L)
-                wmax <- rep(wmax, length(wmin))
+        ##     ## wmin or wmax or both have length > 1
+        ##     if (length(wmin) == 1L)
+        ##         wmin <- rep(wmin, length(wmax))
+        ##     if (length(wmax) == 1L)
+        ##         wmax <- rep(wmax, length(wmin))
 
-            if (!isTRUE(active))
-                .body <- .sub(.body, list(wmin = quote(wmin[active]),
-                                          wmax = quote(wmax[active])))
+        ##     if (!isTRUE(active))
+        ##         .body <- .sub(.body, list(wmin = quote(wmin[active]),
+        ##                                   wmax = quote(wmax[active])))
 
-        } else if (!isFALSE(budget) && length(budget) == 1L) {
+        ## } else if (!isFALSE(budget) && length(budget) == 1L) {
 
-            ## wmin and wmax have length 1: no subsetting
-            .body[[7L]] <- quote(
-                stepsize <- min(x[i] - wmin, wmax - x[j], stepsize))
-        }
+        ##     ## wmin and wmax have length 1: no subsetting
+        ##     .body[[7L]] <- quote(
+        ##         stepsize <- min(x[i] - wmin, wmax - x[j], stepsize))
+        ## }
 
-        ## [active]
-        if (!isTRUE(active)) {
-            .body <- .sub(.body, list(x = quote(x[active])))
-            .body[[length(.body)]] <- quote(x)
-        }
+        ## ## [active]
+        ## if (!isTRUE(active)) {
+        ##     .body <- .sub(.body, list(x = quote(x[active])))
+        ##     .body[[length(.body)]] <- quote(x)
+        ## }
 
 
         ## [update]
@@ -111,9 +157,6 @@ neighbourfun <- function(min = 0,
                     A[, c(i, j)] %*% c(-stepsize, stepsize))
             .body[[11L]] <- quote(x)
         }
-
-
-
 
 
 

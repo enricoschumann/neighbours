@@ -1,7 +1,7 @@
 ## -*- truncate-lines: t; -*-
 
-library("tinytest")
-library("neighbours")
+## library("tinytest")
+## library("neighbours")
 
 steps <- if (Sys.getenv("ES19_TESTING") == "TRUE")
              50000 else 1000
