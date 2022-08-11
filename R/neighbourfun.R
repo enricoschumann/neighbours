@@ -178,8 +178,8 @@ neighbourfun <- function(min = 0,
             }
         } else {
             ans <- function(x, ...) {
-                ii <- sample.int(length(x), stepsize)
-                x[ii] <- x[sample.int(ii)]
+                ii <- sample.int(length(x), size = stepsize)
+                x[ii] <- x[sample(ii)]
                 x
             }
         }
@@ -307,6 +307,8 @@ compare_vectors <- function(...,
 
 
     vecs <- list(...)
+    if (!is.logical(vecs[[1]]))
+        stop("currently only supported for logical vectors")
     len.x <- length(vecs)
     if (length(unique(lengths(vecs))) != 1L)
         stop("vectors have different lengths")
