@@ -50,6 +50,7 @@ a seed.
 <<package-seed>>=
 library("neighbours")
 set.seed(347343)
+set.seed(34734)
 @
 
 \noindent In the examples that follow, we will use a
@@ -66,7 +67,7 @@ LSopt <- if (requireNamespace("NMOF")) {
              function(OF, algo = list(), ...) {
                  xc  <- algo$x0
                  xcF <- OF(xc, ...)
-                 for (s in seq_len(algo$nS)) {
+                 for (s in seq_len(algo$nI)) {
                      xn <- algo$neighbour(xc, ...)
                      xnF <- OF(xn, ...)
                      if (xnF <= xcF) {
@@ -151,7 +152,7 @@ sol.ls <- LSopt(column_cor,
 @
 
 Let us evaluate the final solution.
-<<>>=
+<<check-sol>>=
 column_cor(sol.ls$xbest, X, y)
 @
 
@@ -207,8 +208,8 @@ compare_vectors(x)
 
 We restrict the changes that can be made to the
 solution: the first three elements must not be touched;
-only the remaining elements may change. (They are
-\texttt{active}.)
+only the remaining elements may change, i.e. are
+\texttt{active}.
 
 <<restrict>>=
 active <- c(rep(FALSE, 3),
@@ -232,7 +233,6 @@ do.call(compare_vectors, xs)
 
 \section*{Another example: minimising portfolio risk}
 
-
 Suppose we are given a matrix \texttt{R} and aim to
 find a vector $x$ such that the variance of the
 elements in the product~$Rx$ is minimised.  This is
@@ -254,26 +254,29 @@ could write an objective function as follows:
 <<variance1>>=
 variance <- function(x, S, ...)
     x %*% S %*% x
-@ 
+@
 (In the code, \texttt{S} stands for the
 variance--covariance matrix $\Sigma$.)
 
 
 An alternative way to
 write the objective function is the following.
-<<>>=
+<<variance2>>=
 variance2 <- function(x, R, ...)
     var(R %*% x)
-@ 
-The disadvantage of this second version is efficiency
+@
+The disadvantage of the second version is efficiency:
+$R$ might have many rows, and then computing the product~$Rx$
+in every iteration would be more expensive than using $S$,
+which essentially is the crossproduct of~$R$.  But as we shall see
+below, this inefficiency can be remedied.
 
 
 Suppose we start with an equal-weight portfolio.
-
 <<>>=
-R <- NMOF::randomReturns(20, 120, 0.03, rho = 0.6)
+R <- NMOF::randomReturns(na = 80, 120, 0.03, rho = 0.6)
 S <- cov(R)  ## Sigma
-x0 <- rep(1/20, 20)
+x0 <- rep(1/ncol(R), ncol(R))
 @
 
 When the argument \texttt{type} is set to
@@ -282,21 +285,20 @@ will randomly select elements, and then add and
 subtract numbers to and from those elements.  The size
 of those numbers is controlled by argument
 \texttt{stepsize}, and with argument \texttt{random}
-set to TRUE (the default), the step sizes will vary
-randomly.  When argument \texttt{sum} is \texttt{TRUE},
-the function will add and subtract from chosen elements
-in such a way that the sum over all elements remains
-unchanged.  (That is a typical restriction in
-portfolio-selection models.)
+set to \texttt{TRUE} (the default), the step sizes will
+vary randomly.  When argument \texttt{sum} is
+\texttt{TRUE}, the function will add and subtract from
+chosen elements in such a way that the sum over all
+elements remains unchanged.  (That is a typical
+restriction in portfolio-selection models.)
 
-<<>>=
-nb <- neighbourfun(type = "numeric", min = 0, max = 0.10,
+<<nb>>=
+nb <- neighbourfun(type = "numeric", min = 0, max = 0.20,
                    stepsize = 0.005)
+@
 
-@ 
-The objective function.
-
-We can solve this problem with Local Search.
+We can solve this problem with Local Search with the
+first version of the objective function.
 <<mv-ls1>>=
 sol.ls <- LSopt(variance,
                 list(x0 = x0,
@@ -305,29 +307,31 @@ sol.ls <- LSopt(variance,
                      printBar = FALSE),
                 S = S)
 
-NMOF::minvar(S, wmin = 0, wmax = 0.1)
+sol.qp <- if (requireNamespace("NMOF"))
+              round(NMOF::minvar(S, wmin = 0, wmax = 0.2), 2) else NA
+data.frame(LS = round(sol.ls$xbest, 2)[1:10],
+           QP = sol.qp[1:10])
 @
 
 When we feed it to \texttt{LSopt}, we arrive at the same solution.
 <<mv-ls2>>=
-nb <- neighbourfun(type = "numeric", min = 0, max = 0.10,
-                   stepsize = 0.005)
-sol.ls <- LSopt(variance2,
+sol.ls2 <- LSopt(variance2,
                 list(x0 = x0,
                      neighbour = nb,
                      nI = 1000,
                      printBar = FALSE),
                 R = R)
 
-NMOF::minvar(S, wmin = 0, wmax = 0.1)
+data.frame(LS = round(sol.ls2$xbest, 2)[1:10],
+           QP = sol.qp[1:10])
 @
 
-This second objective function is less
-efficient than the first.  But it is much more flexible:
-only for minimising variance,  could we take the shortcut via
-the variance--covariance matrix.  But for other
-measures of risk, we cannot do that.  One example is the so-called
-semi-variance, defined as
+This second objective function is, as described above,
+less efficient than the first.  But it is much more
+flexible: only for minimising variance could we take
+the shortcut via the variance--covariance matrix.  But
+for other measures of risk, we cannot do that.  One
+example is the so-called semi-variance, defined as
 
 \begin{equation}
   \label{eq:sv}
@@ -340,65 +344,111 @@ semivariance <- function(x, R, ...) {
     Rx <- R %*% x
     Rx.lower <- pmin(Rx - mean(Rx), 0)
     sum(Rx.lower)
-} 
-@ 
+}
+@
+
 
 
 \section*{Updating}
-
 
 In many applications, such as the example in the
 previous section, but also in many other cases when
 doing data analysis, the solution \texttt{x} is used to
 compute a matrix/vector product $Ax$, in which $A$ is a
-$m$ times $n$~matrix, and $x$ is of length$n$.
-
+$m$ times $n$~matrix, and $x$ is of length $n$.
 
 If we only change few elements in the solution, we can
 actually update this product and save computing time
 (the longer $x$ is, the more time we can save).
 
-
 Let $x^{\mathrm{c}}$ denote the current solution and
 $x^{\mathrm{n}}$ the neighbour solution. This latter
 solution is produced by adding element-wise the
-sparse vector $x^{\Delta}$ to $x^{\mathrm{c}}$.
+sparse vector $x^{\Delta}$ to $x^{\mathrm{c}}$:
 
 \begin{equation*}
-   x^{\mathrm{n}}  = \phantom{A(}x^{\mathrm{c}} + x^{\Delta}
+   x^{\mathrm{n}} = \phantom{A(}x^{\mathrm{c}} + x^{\Delta}\,.
 \end{equation*}
-
+Then we have:
 \begin{equation*}
-  Ax^{\mathrm{n}}  = A(x^{\mathrm{c}}+ x^{\Delta}) =
-  \underbrace{\ \ Ax^{\mathrm{c}}\ \ }_{\text{known}} + Ax^{\Delta}
+  Ax^{\mathrm{n}} = A(x^{\mathrm{c}} + x^{\Delta}) =
+  \underbrace{\ \ Ax^{\mathrm{c}}\ \ }_{\text{known}} + Ax^{\Delta}\,.
 \end{equation*}
 
+Let us solve the risk-minimisation model one more time.
+<<>>=
+attr(x0, "Ax") <- R %*% x0
+@
 
+<<variance2>>=
+variance3 <- function(x, ...)
+    var(attr(x, "Ax"))
+@
 
+<<nb-update>>=
+nb_upd <- neighbourfun(type = "numeric", min = 0, max = 0.20,
+                   stepsize = 0.005,
+                   update = "Ax", A = R)
+@
 
-<<num-target>>=
-target <- runif(100)
+<<>>=
+sol.ls3 <- LSopt(variance3,
+                list(x0 = x0,
+                     neighbour = nb_upd,
+                     nI = 1000,
+                     printBar = FALSE),
+                R = R)
 
+data.frame(LS = round(sol.ls3$xbest, 2)[1:10],
+           QP = sol.qp[1:10])
+@
 
+But \texttt{variance3} is faster:
+<<>>=
 
-deviation <- function(x, target) {
-    xx <- x - target
-    crossprod(xx)
-}
+system.time(for (i in 1:100)
+                sol.ls2 <- LSopt(variance2,
+                                 list(x0 = x0,
+                                      neighbour = nb_upd,
+                                      nI = 1000,
+                                      printDetail = FALSE,
+                                      printBar = FALSE),
+                                 R = R))
 
-sol <- LSopt(deviation,
-             list(neighbour = neighbourfun(type = "numeric",
-                                           length = 100,
-                                           stepsize = 0.05),
-                  x0 = runif(length(target)),
-                  nI = 50000,
-                  printBar = FALSE),
-             target = target)
-
-data.frame(target[1:10], sol$xbest[1:10])
-
+system.time(for (i in 1:100)
+                sol.ls3 <- LSopt(variance3,
+                                 list(x0 = x0,
+                                      neighbour = nb_upd,
+                                      nI = 1000,
+                                      printDetail = FALSE,
+                                      printBar = FALSE),
+                                 R = R))
 
 @
+
+% <<num-target>>=
+% target <- runif(100)
+
+
+
+% deviation <- function(x, target) {
+%     xx <- x - target
+%     crossprod(xx)
+% }
+
+% sol <- LSopt(deviation,
+%              list(neighbour = neighbourfun(type = "numeric",
+%                                            length = 100,
+%                                            stepsize = 0.05),
+%                   x0 = runif(length(target)),
+%                   nI = 50000,
+%                   printBar = FALSE),
+%              target = target)
+
+% data.frame(target[1:10], sol$xbest[1:10])
+
+
+% @
 
 
 

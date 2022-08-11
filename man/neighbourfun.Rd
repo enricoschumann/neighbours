@@ -22,49 +22,43 @@ neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
              A = NULL, ...)
 }
 \arguments{
-  \item{min}{a numeric vector. A scalar is recycled to \code{length}.
+  \item{min}{a numeric vector. A scalar is recycled to \code{length},
+    if specified.
   }
-  \item{max}{a numeric vector. A scalar is recycled to \code{length}.
+  \item{max}{a numeric vector. A scalar is recycled to \code{length},
+    if specified.
   }
-  \item{kmin}{integer
+  \item{kmin}{\code{\link{NULL}} or \code{integer}:
+    the minimum number of \code{\link{TRUE}} values in logical vectors
   }
-  \item{kmax}{a numeric vector
+  \item{kmax}{\code{\link{NULL}} or \code{integer}:
+    the maximum number of \code{\link{TRUE}} values in logical vectors
   }
-  \item{stepsize}{numeric. For numeric neighbourhoods, the (average)
-    stepsize. For logical neighbourhoods, the number of elements that
-             are changed.
+  \item{stepsize}{numeric. For numeric neighbourhoods,
+    the (average) stepsize. For logical neighbourhoods,
+    the number of elements that are changed.
   }
-  \item{sum}{
-    logical or numeric. If specified and of length 1, only zero-sum
-    changes will be applied to a solution (i.e. the sum over all
+  \item{sum}{logical or numeric.
+    If specified and of length 1, only zero-sum
+    changes will be applied to a numeric vector (i.e. the sum over all
     elements in a solution remains unchanged).
-
   }
-  \item{random}{
-    logical. Should the stepsize be random or fixed?
+  \item{random}{logical. Should the stepsize be random or fixed?
   }
-  \item{active}{
-
-    a vector: either the positions of elements that may
-    be changed, or a logical vector. The default is a
+  \item{active}{a vector: either the positions of elements
+    that may be changed, or a logical vector. The default is a
     length-one logical vector, which means that all
     elements may be changed.
-
   }
-  \item{update}{
-
-    either \code{logical} (the default \code{FALSE}) or
+  \item{update}{either \code{logical} (the default is \code{FALSE}) or
     character, specifying the type of
     updating. Currently supported is \code{"Ax"}, in
-    which case the matrix \code{A} be specified. See
+    which case the matrix \code{A} must be specified. See
     examples.
-
   }
-  \item{A}{
-    a numeric matrix
-  }
-  \item{type}{
-    string: either \code{"numeric"}, \code{"logical"} or \code{"permute"}
+  \item{A}{a numeric matrix}
+  \item{type}{string: either \code{"numeric"},
+    \code{"logical"} or \code{"permute"}
   }
   \item{length}{
     integer: the length of a vector
@@ -78,6 +72,18 @@ neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
   algorithms.
 
   \code{neighborfun} is an alias for \code{neighbourfun}.
+
+
+  Three types of solution vectors are supported:
+  \describe{
+
+    \item{\code{numeric}}{a neighbour is created by adding or
+      subtracting typically small numbers to random elements of a solution}
+    \item{\code{logical}}{\code{\link{TRUE}},
+      \code{\link{FALSE}} values are switched}
+    \item{\code{permute}}{elements of \code{x} are exchanged. Works with
+      atomic and generic vectors (aka lists).}
+  }
 
 }
 \value{
@@ -126,7 +132,7 @@ for (i in 1:5) {
 
 
 
-## UPDATING
+## UPDATING a numeric neighbourhood
 ##   the vector is 'x' is used in the product 'Ax'
 A <- array(rnorm(100*25), dim = c(100, 25))
 N <- neighbourfun(type = "numeric",
@@ -142,9 +148,27 @@ all.equal(A \%*\% x, attr(x, "Ax"))
 
 
 
-## ## a useful way to store/specify parameters
-## settings <- list(...)
-## do.call(neighbourfun, settings)
+## a PERMUTATION neighbourhood
+x <- 1:5
+
+N <- neighbourfun(type = "permute")
+N(x)
+## [1] 1 2 5 4 3
+##         ^   ^
+
+N <- neighbourfun(type = "permute", stepsize = 5)
+N(x)
+
+## 'x' is not restricted to integers
+x <- letters[1:5]
+N(x)
+
+
+## a useful way to STORE/SPECIFY PARAMETERS, e.g. in config files
+settings <- list(type = "numeric",
+                 min = 0.0,
+                 max = 0.2)
+do.call(neighbourfun, settings)
 }
 
 \keyword{ optimize }

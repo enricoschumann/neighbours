@@ -269,3 +269,14 @@ for (i in 1:steps) {
     expect_true(all(xn <= x.max))
     x <- xn
 }
+
+
+
+
+## ------ permute: with list
+N <- neighbourfun(type = "permute", stepsize = 2)
+x <- as.list(letters[1:5])
+xx <- N(x)
+expect_equal(mode(xx), "list")
+expect_equal(sum(unlist(x) == unlist(xx)), 3)
+expect_equal(sum(unlist(x) == sort(unlist(xx))), 5)
