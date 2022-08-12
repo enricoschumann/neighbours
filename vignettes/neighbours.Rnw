@@ -2,11 +2,11 @@
 \documentclass[a4paper,11pt]{article}
 \usepackage[left = 3cm, top = 2cm, bottom = 2cm, right = 4cm, marginparwidth=3.5cm]{geometry}
 \usepackage[noae,nogin]{Sweave}
-\usepackage{libertine}
-\usepackage[scaled=0.9]{inconsolata}
-\usepackage[T1]{fontenc}
-\renewcommand*\familydefault{\sfdefault}
 \usepackage{amsmath,amstext}
+\usepackage{libertinus}
+\usepackage[T1]{fontenc}
+\usepackage[scaled=0.9]{inconsolata}
+\renewcommand*\familydefault{\sfdefault}
 \usepackage{hyperref}
 \usepackage{natbib}
 \usepackage{xcolor}
@@ -43,22 +43,22 @@ pv <- gsub("(.*)[.](.*)", "\\1-\\2", pv)
 
 \noindent The function \texttt{neighbourfun} constructs
 a neighbourhood function, i.e. a function that maps a
-given solution to a randomly-chosen neighbour.  This
-vignette provides several examples how the function can
+given solution into a randomly-chosen neighbour.  This
+vignette provides several examples of how the function can
 be used.  We start by attaching the package and setting
 a seed.
 <<package-seed>>=
 library("neighbours")
 set.seed(347343)
-set.seed(34734)
+# set.seed(34734)
 @
 
 \noindent In the examples that follow, we will use a
 simple optimisation algorithm, a (stochastic) Local
 Search.  If package \texttt{NMOF} is available,
-function \texttt{LSopt} from that package is used;
-otherwise, we use a simple replacement (taken from
-\citealp[Chapter~13]{Gilli2019}).
+function \texttt{LSopt} from that package is used.
+If not, we use a simple replacement, taken from
+\citet[Chapter~13]{Gilli2019}.
 
 <<LSopt>>=
 LSopt <- if (requireNamespace("NMOF")) {
@@ -128,15 +128,15 @@ the quality of~\texttt{x0}.
 column_cor(x0, X, y)
 @
 
-\noindent To run a Local Search, we need a
-neighbourhood function.  Calling \texttt{neighbourfun}
-will create such a function, taking as inputs our
-constraints:$^\dagger$ at least~10, no more than 20~columns.%
+\noindent To run a Local Search, we need a neighbourhood
+function.  Calling \texttt{neighbourfun} will create such a
+function, taking as inputs our constraints:$^\dagger$ at
+least~10, no more than 20~columns.%
 \marginpar{\footnotesize\RaggedRight$^\dagger$\,\citet{Gentleman2000}
   show that \textsf{R}'s scoping rules are particularly
-  convenient for creating the ingredients of
-  optimisation, such as the objective function or, as
-  here, a neighbourhood function.} %
+  convenient for creating the ingredients of optimisation,
+  such as the objective function or, as here, a
+  neighbourhood function.} %
 <<nb>>=
 nb <- neighbourfun(type = "logical", kmin = 10, kmax = 20)
 @
@@ -146,7 +146,7 @@ nb <- neighbourfun(type = "logical", kmin = 10, kmax = 20)
 sol.ls <- LSopt(column_cor,
                 list(x0 = x0,
                      neighbour = nb,
-                     nI = 1000,
+                     nI = 3000,
                      printBar = FALSE),
                 X = X, y = y)
 @
@@ -155,26 +155,30 @@ Let us evaluate the final solution.
 <<check-sol>>=
 column_cor(sol.ls$xbest, X, y)
 @
-
+And we check the constraints: how many columns are in the solution?
+<<constraints-check>>=
+sum(sol.ls$xbest)
+@
 
 We can also visualise the initial and the final
 solution.  The negative correlation is clearly visible.
 
 <<fig=true, width = 5, height = 3.2>>=
 par(mfrow = c(1, 2), las = 1, bty = "n",
-    mar = c(3, 3, 1, 0.5), tck = 0.02, cex = 0.7,
-    mgp = c(1.75, 0.25, 0))
+    mar = c(3, 3, 1, 0.5), mgp = c(1.75, 0.25, 0),
+    tck = 0.02, cex = 0.7)
 plot(y, rowMeans(X[, x0]),
      main = "Initial solution",
      pch = 19, cex = 0.5,
      ylim = c(0.3, 0.7),
-     ylab = "Linear combination of columns")
+     xlab = "y",
+     ylab = "Mean of linear combination of columns")
 par(yaxt = "n")
 plot(y, rowMeans(X[, sol.ls$xbest]),
      main = "Result of Local Search",
      pch = 19, cex = 0.5,
      ylim = c(0.3, 0.7),
-     ylab = "Linear combination of columns")
+     xlab = "y")
 axis(4)
 @
 
@@ -195,7 +199,7 @@ that the neighbourhood function required a valid
 We may also set \texttt{kmin} and \texttt{kmax} to
 the same integer, so the number of \texttt{TRUE} values
 is fixed.  (In this case, a slightly-different
-neighbourhood algorithm will be used.)
+algorithm will be used.)
 
 We can also add a constraint about elements not to
 touch. Suppose the initial solution to a model (not the
@@ -233,7 +237,7 @@ do.call(compare_vectors, xs)
 
 \section*{Another example: minimising portfolio risk}
 
-Suppose we are given a matrix \texttt{R} and aim to
+Suppose we are given a matrix $R$ and aim to
 find a vector $x$ such that the variance of the
 elements in the product~$Rx$ is minimised.  This is
 common problem in finance, in which $R$ could be a
@@ -243,8 +247,9 @@ weights.
 
 We'll solve this problem, as in the previous example,
 with Local Search.  Our solution now is a numeric
-vector~$x$, and we need two functions -- the objective
-function and the neighbourhood function -- to solve it.
+vector~$x$; and again we need two functions -- the objective
+function and the neighbourhood function -- to find the
+optimal (or at least a good) vector.
 
 Start with the objective function.  For this particular
 goal -- the variance of returns --, we can first
@@ -273,16 +278,19 @@ below, this inefficiency can be remedied.
 
 
 Suppose we start with an equal-weight portfolio.
-<<>>=
-R <- NMOF::randomReturns(na = 80, 120, 0.03, rho = 0.6)
+<<create-R>>=
+if (!requireNamespace("NMOF")) {
+    R <- array(rnorm(120*20, sd = 0.03), dim = c(120, 20))
+} else
+    R <- NMOF::randomReturns(na = 20, 120, 0.03, rho = 0.6)
 S <- cov(R)  ## Sigma
 x0 <- rep(1/ncol(R), ncol(R))
 @
 
 When the argument \texttt{type} is set to
 \texttt{numeric}, the resulting neighbourhood function
-will randomly select elements, and then add and
-subtract numbers to and from those elements.  The size
+will randomly select elements and change them slightly by
+adding or subtracting real numbers.  The size
 of those numbers is controlled by argument
 \texttt{stepsize}, and with argument \texttt{random}
 set to \texttt{TRUE} (the default), the step sizes will
@@ -293,7 +301,7 @@ elements remains unchanged.  (That is a typical
 restriction in portfolio-selection models.)
 
 <<nb>>=
-nb <- neighbourfun(type = "numeric", min = 0, max = 0.20,
+nb <- neighbourfun(type = "numeric", min = 0, max = 0.2,
                    stepsize = 0.005)
 @
 
@@ -303,7 +311,7 @@ first version of the objective function.
 sol.ls <- LSopt(variance,
                 list(x0 = x0,
                      neighbour = nb,
-                     nI = 1000,
+                     nI = 2000,
                      printBar = FALSE),
                 S = S)
 
@@ -313,16 +321,17 @@ data.frame(LS = round(sol.ls$xbest, 2)[1:10],
            QP = sol.qp[1:10])
 @
 
-When we feed it to \texttt{LSopt}, we arrive at the same solution.
+When we feed the second version of the objective function to
+\texttt{LSopt}, we arrive at the same solution.
 <<mv-ls2>>=
 sol.ls2 <- LSopt(variance2,
                 list(x0 = x0,
                      neighbour = nb,
-                     nI = 1000,
+                     nI = 2000,
                      printBar = FALSE),
                 R = R)
 
-data.frame(LS = round(sol.ls2$xbest, 2)[1:10],
+data.frame(LS2 = round(sol.ls2$xbest, 2)[1:10],
            QP = sol.qp[1:10])
 @
 
@@ -338,7 +347,8 @@ example is the so-called semi-variance, defined as
   \frac{1}{N}\sum_{i=1}^N \min(R_ix - m, 0)^2
 \end{equation}
 
-All we have to do now is to exchange objective functions.
+All we have to do now is to exchange objective functions,
+and Local Search will find the corresponding portfolio.
 <<>>=
 semivariance <- function(x, R, ...) {
     Rx <- R %*% x
@@ -351,20 +361,22 @@ semivariance <- function(x, R, ...) {
 
 \section*{Updating}
 
-In many applications, such as the example in the
-previous section, but also in many other cases when
-doing data analysis, the solution \texttt{x} is used to
-compute a matrix/vector product $Ax$, in which $A$ is a
-$m$ times $n$~matrix, and $x$ is of length $n$.
+In the example in the previous section, but also in many
+other cases when doing data analysis, the solution $x$ is
+used to compute a matrix/vector product $Ax$, in which $A$
+is a $m$ times $n$~matrix, and $x$ is of length $n$.
 
-If we only change few elements in the solution, we can
-actually update this product and save computing time
-(the longer $x$ is, the more time we can save).
+If we change only few elements in the solution, then we do
+not need to compute $Ax$ in every iteration. Instead, we
+can update the product and save computing time (the longer
+$x$ is, the more time we can save).
 
 Let $x^{\mathrm{c}}$ denote the current solution and
 $x^{\mathrm{n}}$ the neighbour solution. This latter
-solution is produced by adding element-wise the
-sparse vector $x^{\Delta}$ to $x^{\mathrm{c}}$:
+solution is produced by adding element-wise the vector
+$x^{\Delta}$ to $x^{\mathrm{c}}$. If only few elements
+change, the n $x^{\Delta}$ will be relatively sparse,
+i.e. many of its elements are zero.
 
 \begin{equation*}
    x^{\mathrm{n}} = \phantom{A(}x^{\mathrm{c}} + x^{\Delta}\,.
@@ -374,85 +386,52 @@ Then we have:
   Ax^{\mathrm{n}} = A(x^{\mathrm{c}} + x^{\Delta}) =
   \underbrace{\ \ Ax^{\mathrm{c}}\ \ }_{\text{known}} + Ax^{\Delta}\,.
 \end{equation*}
+So we only need to compute $Ax^{\Delta}$ in every iteration,
+not the full $Ax$.
 
 Let us solve the risk-minimisation model one more time.
-<<>>=
+First, we add the initial product $Ax$ as an attribute to
+the solution.
+<<attr>>=
 attr(x0, "Ax") <- R %*% x0
 @
 
-<<variance2>>=
+The objective function now has less work to do: it does
+not compute $Ax$, but only its variance.
+<<variance3>>=
 variance3 <- function(x, ...)
     var(attr(x, "Ax"))
 @
 
+The final ingredient is the neighbourhood function.
 <<nb-update>>=
-nb_upd <- neighbourfun(type = "numeric", min = 0, max = 0.20,
-                   stepsize = 0.005,
-                   update = "Ax", A = R)
+nb_upd <- neighbourfun(type = "numeric",
+                       min = 0, max = 0.2,
+                       stepsize = 0.005,
+                       update = "Ax", A = R)
 @
 
-<<>>=
+It remains to call \texttt{LSopt}.
+<<mv-ls3>>=
 sol.ls3 <- LSopt(variance3,
                 list(x0 = x0,
                      neighbour = nb_upd,
-                     nI = 1000,
-                     printBar = FALSE),
-                R = R)
+                     nI = 2000,
+                     printBar = FALSE))
 
-data.frame(LS = round(sol.ls3$xbest, 2)[1:10],
+data.frame(LS = round(sol.ls$xbest,  2)[1:10],
+           LS2 = round(sol.ls2$xbest, 2)[1:10],
+           LS3 = round(sol.ls3$xbest, 2)[1:10],
            QP = sol.qp[1:10])
 @
 
-But \texttt{variance3} is faster:
-<<>>=
-
-system.time(for (i in 1:100)
-                sol.ls2 <- LSopt(variance2,
-                                 list(x0 = x0,
-                                      neighbour = nb_upd,
-                                      nI = 1000,
-                                      printDetail = FALSE,
-                                      printBar = FALSE),
-                                 R = R))
-
-system.time(for (i in 1:100)
-                sol.ls3 <- LSopt(variance3,
-                                 list(x0 = x0,
-                                      neighbour = nb_upd,
-                                      nI = 1000,
-                                      printDetail = FALSE,
-                                      printBar = FALSE),
-                                 R = R))
-
-@
-
-% <<num-target>>=
-% target <- runif(100)
+The solution remains the same, but in particular for large
+matrices $A$, the optimisation can become much faster.
 
 
 
-% deviation <- function(x, target) {
-%     xx <- x - target
-%     crossprod(xx)
-% }
 
-% sol <- LSopt(deviation,
-%              list(neighbour = neighbourfun(type = "numeric",
-%                                            length = 100,
-%                                            stepsize = 0.05),
-%                   x0 = runif(length(target)),
-%                   nI = 50000,
-%                   printBar = FALSE),
-%              target = target)
-
-% data.frame(target[1:10], sol$xbest[1:10])
-
-
-% @
-
-
-
-\citet{Gilli2019}
+\nocite{Gilli2019}
 
 \bibliographystyle{plainnat}
 \bibliography{neighbours}

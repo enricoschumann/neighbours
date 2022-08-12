@@ -280,3 +280,46 @@ xx <- N(x)
 expect_equal(mode(xx), "list")
 expect_equal(sum(unlist(x) == unlist(xx)), 3)
 expect_equal(sum(unlist(x) == sort(unlist(xx))), 5)
+
+
+
+
+
+
+
+
+## TODO
+##   create example of find
+## LSopt <- function(OF, algo = list(), ...) {
+##     xc  <- algo$x0
+##     xcF <- OF(xc, ...)
+##     for (s in seq_len(algo$nI)) {
+##         xn <- algo$neighbour(xc, ...)
+##         xnF <- OF(xn, ...)
+##         if (xnF <= xcF) {
+##             xc  <- xn
+##             xcF <- xnF
+##         }
+##     }
+##     list(xbest = xc, OFvalue = xcF)
+## }
+
+## target <- runif(20)
+
+
+
+## deviation <- function(x, target) {
+##     xx <- x - target
+##     crossprod(xx)
+## }
+
+## sol <- LSopt(deviation,
+##              list(neighbour = neighbourfun(type = "numeric",
+##                                            ## length = 20,
+##                                            stepsize = 0.03),
+##                   x0 = runif(length(target)),
+##                   nI = 500000,
+##                   printBar = FALSE),
+##              target = target)
+
+## sol$xbest - target
