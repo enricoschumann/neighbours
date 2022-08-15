@@ -7,6 +7,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[scaled=0.9]{inconsolata}
 \renewcommand*\familydefault{\sfdefault}
+\usepackage{sfmath}
 \usepackage{hyperref}
 \usepackage{natbib}
 \usepackage{xcolor}
@@ -83,14 +84,14 @@ LSopt <- if (requireNamespace("NMOF")) {
 
 \section*{Example: Selecting elements of a list}
 
-\noindent We are given a numeric vector~$y$, and also a
+\noindent We are given a numeric vector~$y$ and also a
 matrix~$X$, which has as many rows as~$y$ has elements.
 The aim now is to find a subset of columns of~$X$ whose
 average is as lowly correlated with $y$ as possible.
 Let us create random data.
 
 <<data>>=
-ny <- 50     ## length of y
+ny <- 50     ## length of y, number of rows of X
 nx <- 500    ## number of columns of X
 y <- runif(ny)
 X <- array(runif(ny * nx), dim = c(ny, nx))
@@ -99,7 +100,7 @@ X <- array(runif(ny * nx), dim = c(ny, nx))
 \noindent We'll try a (stochastic) Local Search to compute a
 solution.  There may be other, perhaps better
 heuristics for the job.  But a Local Search will
-compute a good solution (as we will see), and it is
+compute a good solution, as we will see; and it is
 simple, which is a good idea for an example.  See
 \citet[Chapter~13]{Gilli2019} for a tutorial on Local
 Search.
@@ -144,9 +145,9 @@ nb <- neighbourfun(type = "logical", kmin = 10, kmax = 20)
 \noindent It remains to run the Local Search.
 <<LSopt-run>>=
 sol.ls <- LSopt(column_cor,
-                list(x0 = x0,
-                     neighbour = nb,
-                     nI = 3000,
+                list(neighbour = nb,
+                     x0 = x0,      ## initial solution
+                     nI = 3000,    ## number of iterations
                      printBar = FALSE),
                 X = X, y = y)
 @
@@ -160,7 +161,7 @@ And we check the constraints: how many columns are in the solution?
 sum(sol.ls$xbest)
 @
 
-We can also visualise the initial and the final
+We can visualise the initial and the final
 solution.  The negative correlation is clearly visible.
 
 <<fig=true, width = 5, height = 3.2>>=
@@ -237,17 +238,17 @@ do.call(compare_vectors, xs)
 
 \section*{Another example: minimising portfolio risk}
 
-Suppose we are given a matrix $R$ and aim to
-find a vector $x$ such that the variance of the
-elements in the product~$Rx$ is minimised.  This is
-common problem in finance, in which $R$ could be a
-matrix of asset-price returns, with each column holding
-the returns of one asset, and $x$ a vector of portfolio
+Suppose we are given a matrix $R$ and aim to find a
+vector $x$ such that the variance of the elements in
+the product~$Rx$ is minimised.  This is a common
+problem in finance, in which $R$ could be a matrix of
+asset-price returns, with each column holding the
+returns of one asset, and $x$ a vector of portfolio
 weights.
 
 We'll solve this problem, as in the previous example,
-with Local Search.  Our solution now is a numeric
-vector~$x$; and again we need two functions -- the objective
+with Local Search.  The solution now is a numeric
+vector~$x$.  Again we need two functions -- the objective
 function and the neighbourhood function -- to find the
 optimal (or at least a good) vector.
 
@@ -301,7 +302,8 @@ elements remains unchanged.  (That is a typical
 restriction in portfolio-selection models.)
 
 <<nb>>=
-nb <- neighbourfun(type = "numeric", min = 0, max = 0.2,
+nb <- neighbourfun(type = "numeric",
+                   min = 0, max = 0.2,
                    stepsize = 0.005)
 @
 
@@ -344,7 +346,7 @@ example is the so-called semi-variance, defined as
 
 \begin{equation}
   \label{eq:sv}
-  \frac{1}{N}\sum_{i=1}^N \min(R_ix - m, 0)^2
+  \frac{1}{m}\sum_{i=1}^m \min(R_ix - \frac{1}{m}\iota'(Rx), 0)^2
 \end{equation}
 
 All we have to do now is to exchange objective functions,
@@ -372,11 +374,11 @@ can update the product and save computing time (the longer
 $x$ is, the more time we can save).
 
 Let $x^{\mathrm{c}}$ denote the current solution and
-$x^{\mathrm{n}}$ the neighbour solution. This latter
-solution is produced by adding element-wise the vector
-$x^{\Delta}$ to $x^{\mathrm{c}}$. If only few elements
-change, the n $x^{\Delta}$ will be relatively sparse,
-i.e. many of its elements are zero.
+$x^{\mathrm{n}}$ the neighbour solution, produced by
+adding element-wise the vector $x^{\Delta}$ to
+$x^{\mathrm{c}}$. If only few elements change, then
+$x^{\Delta}$ will be relatively sparse, i.e. many of
+its elements are zero.
 
 \begin{equation*}
    x^{\mathrm{n}} = \phantom{A(}x^{\mathrm{c}} + x^{\Delta}\,.
@@ -386,8 +388,11 @@ Then we have:
   Ax^{\mathrm{n}} = A(x^{\mathrm{c}} + x^{\Delta}) =
   \underbrace{\ \ Ax^{\mathrm{c}}\ \ }_{\text{known}} + Ax^{\Delta}\,.
 \end{equation*}
-So we only need to compute $Ax^{\Delta}$ in every iteration,
-not the full $Ax$.
+
+So we only need to compute $Ax^{\Delta}$ in every
+iteration, in which many columns of $A$ are ignored
+because the corresponding elements of~ $x^{\Delta}$
+are zero.
 
 Let us solve the risk-minimisation model one more time.
 First, we add the initial product $Ax$ as an attribute to
