@@ -50,7 +50,7 @@ nb <- neighbourfun(type = "logical")
 
 compare_vectors(x, nb(x))
 ## 01010
-##  |   
+##  |
 ## 00010
 ## The vectors differ in  1  place.
 

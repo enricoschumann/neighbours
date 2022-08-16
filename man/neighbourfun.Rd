@@ -50,12 +50,13 @@ neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
     length-one logical vector, which means that all
     elements may be changed.
   }
-  \item{update}{either \code{logical} (the default is \code{FALSE}) or
-    character, specifying the type of
-    updating. Currently supported is \code{"Ax"}, in
-    which case the matrix \code{A} must be specified. See
-    examples.
-  }
+
+  \item{update}{either \code{logical} (the default
+    \code{FALSE}) or a string, specifying the type of
+    updating. Currently supported is \code{"Ax"}, in which
+    case the matrix \code{A} must be specified. See
+    Examples.}
+
   \item{A}{a numeric matrix}
   \item{type}{string: either \code{"numeric"},
     \code{"logical"} or \code{"permute"}
@@ -71,34 +72,48 @@ neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
   and \code{...}, which can be used for local-search
   algorithms.
 
-  \code{neighborfun} is an alias for \code{neighbourfun}.
-
-
   Three types of solution vectors are supported:
   \describe{
 
-    \item{\code{numeric}}{a neighbour is created by adding or
-      subtracting typically small numbers to random elements of a solution}
-    \item{\code{logical}}{\code{\link{TRUE}},
-      \code{\link{FALSE}} values are switched}
-    \item{\code{permute}}{elements of \code{x} are exchanged. Works with
-      atomic and generic vectors (aka lists).}
-  }
+    \item{\code{numeric }}{a neighbour is created by adding
+      or subtracting typically small numbers to random
+      elements of a solution}%
+
+    \item{\code{logical} }{\code{\link{TRUE}} and
+      \code{\link{FALSE} } values are switched}%
+
+    \item{\code{permute}}{elements of \code{x} are
+      exchanged. Works with atomic and generic vectors (aka
+      lists).}
+  }%
+
+  \code{neighborfun} is an alias for \code{neighbourfun}.
 
 }
 \value{
 
   A function (closure) with arguments \code{x} and
-  \code{...}.
+  \code{\dots}.
+
+}
+\section{Note on algorithms}{
+
+  There are different strategies to implement constraints in
+  local-search algorithms, and ultimately only experiments
+  show which strategy works well for a given problem class.
+  The algorithms used by \code{\link{neighbourfun}} always
+  require a feasible initial solution, and then remain
+  within the space of feasible solutions. See Gilli et
+  al. (2019), Section 12.5, for a brief discussion.
 
 }
 \references{
 
   Gilli, M., Maringer, D. and Schumann, E. (2019) \emph{Numerical
-  Methods and Optimization in Finance}. 2nd edition. Elsevier.
+  Methods and Optimization in Finance}. 2nd edition. Elsevier.\cr
   \url{https://www.elsevier.com/books/numerical-methods-and-optimization-in-finance/gilli/978-0-12-815065-8}
 
-  Schumann, E. (2019) Financial Optimisation with R (\pkg{NMOF} Manual).
+  Schumann, E. (2019) Financial Optimisation with R (\pkg{NMOF} Manual).\cr
   \url{http://enricoschumann.net/NMOF.htm#NMOFmanual}
 
 }

@@ -50,8 +50,7 @@ be used.  We start by attaching the package and setting
 a seed.
 <<package-seed>>=
 library("neighbours")
-set.seed(347343)
-# set.seed(34734)
+set.seed(3477)
 @
 
 \noindent In the examples that follow, we will use a

@@ -1,3 +1,7 @@
+2022-08-16  Enrico Schumann  <es@enricoschumann.net>
+
+        * DESCRIPTION (Version): 0.1-0
+
 2022-08-10  Enrico Schumann  <es@enricoschumann.net>
 
         * R/neighbourfun.R (neighbourfun): fix "permute"
@@ -10,7 +14,8 @@
 
 2021-09-01  Enrico Schumann  <es@enricoschumann.net>
 
-        * R/neighbourfun.R (ans): add type "permute"
+        * R/neighbourfun.R (neighbourfun): add type
+        "permute"
 
 2020-06-05  Enrico Schumann  <es@enricoschumann.net>
 
