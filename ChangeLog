@@ -1,3 +1,10 @@
+2022-08-17  Enrico Schumann  <es@enricoschumann.net>
+
+        * DESCRIPTION (Version): 0.1-1
+
+        * vignettes/neighbours.Rnw: reset 'par' and
+        'options', as requested by CRAN
+
 2022-08-16  Enrico Schumann  <es@enricoschumann.net>
 
         * DESCRIPTION (Version): 0.1-0

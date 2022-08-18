@@ -25,14 +25,18 @@
 \renewenvironment{Schunk}{\vspace{\topsep}}{\vspace{\topsep}}
 \SweaveOpts{keep.source = TRUE, eps = TRUE}
 
-<<echo=false>>=
-options(continue = "  ", digits = 3, width = 60, useFancyQuotes = FALSE)
+<<options,echo=false,results=hide>>=
+## store current options and graphics settings,
+## to be restored at the end of the vignette
+old.options <- options(continue = "  ", digits = 3,
+                       width = 60, useFancyQuotes = FALSE)
+old.par <- par()
 pv <- packageVersion("neighbours")
 pv <- gsub("(.*)[.](.*)", "\\1-\\2", pv)
 @
 
 \begin{document}
-\title{}
+\title{Neighbourhood Functions for Local-Search Algorithms}
 \author{Enrico Schumann\\\url{es@enricoschumann.net}}
 
 {\raggedright{\LARGE Neighbourhood Functions for Local-Search Algorithms\par}}\hspace*{\fill}
@@ -433,7 +437,11 @@ The solution remains the same, but in particular for large
 matrices $A$, the optimisation can become much faster.
 
 
-
+<<restore-options,echo=false,results=hide>>=
+## restore options and graphics settings
+par(old.par)
+options(old.options)
+@
 
 \nocite{Gilli2019}
 
