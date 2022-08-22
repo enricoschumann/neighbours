@@ -1,3 +1,13 @@
+2022-08-22  Enrico Schumann  <es@enricoschumann.net>
+
+	* DESCRIPTION (Version): 0.1-2
+	(Suggests): add 'quadprog', used in vignette
+
+2022-08-19  Enrico Schumann  <es@enricoschumann.net>
+
+        * inst/tinytest/test_neighbours.R: use more
+        tolerance
+
 2022-08-17  Enrico Schumann  <es@enricoschumann.net>
 
         * DESCRIPTION (Version): 0.1-1

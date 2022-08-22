@@ -201,8 +201,8 @@ for (i in 1:steps) {
     expect_true(all(round(xn - x, 8) %in% c(0, -0.01, 0.01)))
     expect_true(all(xn <= x.max))
     expect_true(all(xn >= x.min))
-    expect_true(sum(xn) <= 1.2)
-    expect_true(sum(xn) >= 0.8)
+    expect_true(sum(xn) <= 1.2 + sqrt(.Machine$double.eps))
+    expect_true(sum(xn) >= 0.8 - sqrt(.Machine$double.eps))
     expect_true(sum(xn != x) <= 1L)
     x <- xn
 }
@@ -222,8 +222,8 @@ for (i in 1:steps) {
     xn <- N(x)
     expect_true(all(xn <= x.max))
     expect_true(all(xn >= x.min))
-    expect_true(sum(xn) <= 1.2 + 1e-12)
-    expect_true(sum(xn) >= 0.8 - 1e-12)
+    expect_true(sum(xn) <= 1.2 + sqrt(.Machine$double.eps))
+    expect_true(sum(xn) >= 0.8 - sqrt(.Machine$double.eps))
     expect_true(sum(xn != x) <= 1L)
     x <- xn
 }
@@ -242,8 +242,8 @@ x <- rep(1/25, 25)
 for (i in 1:steps) {
     xn <- N(x)
     expect_true(sum(xn) != sum(x))
-    expect_true(all(xn >= x.min))
-    expect_true(all(xn <= x.max))
+    expect_true(all(xn >= x.min - sqrt(.Machine$double.eps)))
+    expect_true(all(xn <= x.max + sqrt(.Machine$double.eps)))
     expect_true(sum(xn != x) <= 1L)
     x <- xn
 }

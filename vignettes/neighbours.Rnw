@@ -128,7 +128,7 @@ column_cor <- function(x, X, y)
 
 \noindent With this objective function we can evaluate
 the quality of~\texttt{x0}.
-<<>>=
+<<cor-x0>>=
 column_cor(x0, X, y)
 @
 
