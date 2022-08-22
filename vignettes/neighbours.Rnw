@@ -320,7 +320,8 @@ sol.ls <- LSopt(variance,
                      printBar = FALSE),
                 S = S)
 
-sol.qp <- if (requireNamespace("NMOF"))
+sol.qp <- if (requireNamespace("NMOF") &&
+              requireNamespace("quadprog"))
               round(NMOF::minvar(S, wmin = 0, wmax = 0.2), 2) else NA
 data.frame(LS = round(sol.ls$xbest, 2)[1:10],
            QP = sol.qp[1:10])
