@@ -3,7 +3,7 @@
 \usepackage[left = 3cm, top = 2cm, bottom = 2cm, right = 4cm, marginparwidth=3.5cm]{geometry}
 \usepackage[noae,nogin]{Sweave}
 \usepackage{amsmath,amstext}
-\usepackage{libertinus}
+\usepackage{libertine}
 \usepackage[T1]{fontenc}
 \usepackage[scaled=0.9]{inconsolata}
 \renewcommand*\familydefault{\sfdefault}
