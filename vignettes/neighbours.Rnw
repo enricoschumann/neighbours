@@ -30,7 +30,7 @@
 ## to be restored at the end of the vignette
 old.options <- options(continue = "  ", digits = 3,
                        width = 60, useFancyQuotes = FALSE)
-old.par <- par()
+old.par <- par(no.readonly = TRUE)
 pv <- packageVersion("neighbours")
 pv <- gsub("(.*)[.](.*)", "\\1-\\2", pv)
 @
