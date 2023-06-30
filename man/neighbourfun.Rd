@@ -113,7 +113,8 @@ neighborfun (min = 0, max = 1, kmin = NULL, kmax = NULL,
   Methods and Optimization in Finance}. 2nd edition. Elsevier.\cr
   \url{https://www.elsevier.com/books/numerical-methods-and-optimization-in-finance/gilli/978-0-12-815065-8}
 
-  Schumann, E. (2019) Financial Optimisation with R (\pkg{NMOF} Manual).\cr
+  Schumann, E. (2023) \emph{Financial Optimisation with R
+    (\pkg{NMOF} Manual)}.\cr
   \url{http://enricoschumann.net/NMOF.htm#NMOFmanual}
 
 }
