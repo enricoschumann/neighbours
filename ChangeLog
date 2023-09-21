@@ -1,3 +1,12 @@
+2023-09-21  Enrico Schumann  <es@enricoschumann.net>
+
+        * DESCRIPTION (Version): 0.1-3
+
+        * vignettes/neighbours.Rnw: remove "fontenc"
+
+        * DESCRIPTION (Depends): the package depends on
+        R >= 3.3, because it uses \doi{} in the docs
+
 2023-06-29  Enrico Schumann  <es@enricoschumann.net>
 
         * R/next_subset.R (next_subset): add function

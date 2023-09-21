@@ -2,11 +2,11 @@
 \documentclass[a4paper,11pt]{article}
 \usepackage[left = 3cm, top = 2cm, bottom = 2cm, right = 4cm, marginparwidth=3.5cm]{geometry}
 \usepackage[noae,nogin]{Sweave}
-\usepackage{amsmath,amstext}
 \usepackage{libertine}
-\usepackage[T1]{fontenc}
 \usepackage[scaled=0.9]{inconsolata}
+% \usepackage[T1]{fontenc}
 \renewcommand*\familydefault{\sfdefault}
+\usepackage{amsmath,amstext}
 \usepackage{sfmath}
 \usepackage{hyperref}
 \usepackage{natbib}
@@ -385,7 +385,7 @@ $x^{\Delta}$ will be relatively sparse, i.e. many of
 its elements are zero.
 
 \begin{equation*}
-   x^{\mathrm{n}} = \phantom{A(}x^{\mathrm{c}} + x^{\Delta}\,.
+  x^{\mathrm{n}} = x^{\mathrm{c}} + x^{\Delta}\,.
 \end{equation*}
 Then we have:
 \begin{equation*}
