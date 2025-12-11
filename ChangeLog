@@ -1,3 +1,8 @@
+2025-12-11  Enrico Schumann  <es@enricoschumann.net>
+
+        * R/neighbourfun.R (neighbourfun): experimental --
+        name expressions
+
 2023-09-21  Enrico Schumann  <es@enricoschumann.net>
 
         * DESCRIPTION (Version): 0.1-3

@@ -17,9 +17,12 @@ neighbourfun <- function(min = 0,
 
     .sub <- function(e, env) {
         ## replace a subexpression within e by another
-        ## expression, bound in env. Example:
+        ## expression, bound in env. Examples:
         ##    .sub(quote(a + b), list(a = function(x) x + 1))
         ##    ## => function(x) x + 1 + b
+        ##    .sub(quote(a + b), list(a = quote((function(x) x + 1))))
+        ##    ## => (function(x) x + 1) + b
+
         expr <- substitute(substitute(e2, env),
                            env = list(e2 = e))
         eval(expr)
@@ -52,6 +55,7 @@ neighbourfun <- function(min = 0,
                 x[j] <- x[j] + stepsize
                 x
             })
+            names(.body)[10] <- c("return value")
 
             if (length(wmin) == 1) {
 
