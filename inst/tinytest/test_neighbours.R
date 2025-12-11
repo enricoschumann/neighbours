@@ -3,7 +3,7 @@
 ## library("tinytest")
 ## library("neighbours")
 
-steps <- if (Sys.getenv("ES19_TESTING") == "TRUE")
+steps <- if (Sys.getenv("ES_PACKAGE_TESTING_73179826243954") != "")
              50000 else 1000
 
 
@@ -149,7 +149,7 @@ expect_equivalent(A %*%x, attr(x, "Ax"))
 
 
 
-## ------ numeric: updating,active
+## ------ numeric: updating, active
 x.min <- -0.1
 x.max <-  0.1
 active <- 1:5
@@ -184,6 +184,34 @@ for (i in 1:steps) {
     x <- xn
 }
 expect_true(all(x[6:25] == x0[6:25]))
+
+
+
+
+
+## ------ numeric: updating, with a constant added
+x.min <- -0.01
+x.max <-  0.01
+tol <- 1e-14
+A <- array(rnorm(100*25), dim = c(100, 25))
+N <- neighbourfun(type = "numeric",
+                  min = x.min,
+                  max = x.max,
+                  stepsize = 0.015,
+                  update = "Ax",
+                  A = A)
+x0 <- rep(1/25, 25)
+x <- rep(0, 25)
+attr(x, "Ax") <- A %*% (x + x0)
+
+for (i in 1:steps) {
+    xn <- N(x, A)
+    expect_true(all(xn - tol <= x.max))
+    expect_true(all(xn + tol >= x.min))
+    x <- xn
+}
+expect_equivalent(A %*% (x + x0),   attr(x, "Ax"))
+
 
 
 ## ------ numeric: change 1 element, fixed stepsize, min/max budget
