@@ -437,7 +437,6 @@ data.frame(LS = round(sol.ls$xbest,  2)[1:10],
 The solution remains the same, but in particular for large
 matrices $A$, the optimisation can become much faster.
 
-
 <<restore-options,echo=false,results=hide>>=
 ## restore options and graphics settings
 par(old.par)
