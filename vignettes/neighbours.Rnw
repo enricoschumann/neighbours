@@ -37,13 +37,13 @@ pv <- gsub("(.*)[.](.*)", "\\1-\\2", pv)
 
 \begin{document}
 \title{Neighbourhood Functions for Local-Search Algorithms}
-\author{Enrico Schumann\\\url{es@enricoschumann.net}}
+\author{Enrico Schumann\\\url{mailto:es@enricoschumann.net}}
 
 {\raggedright{\LARGE Neighbourhood Functions for Local-Search Algorithms\par}}\hspace*{\fill}
 {\footnotesize Package version \Sexpr{pv}}\medskip
 
 \noindent Enrico Schumann\\
-\noindent \url{es@enricoschumann.net}\\
+\noindent \url{mailto:es@enricoschumann.net}\\
 \bigskip
 
 \noindent The function \texttt{neighbourfun} constructs

@@ -19,7 +19,6 @@ other models.
 The latest released version is available from
 http://enricoschumann.net. In an R session, just type:
 
-    install.packages('neighbours,
-                     type = 'binary',
+    install.packages('neighbours',
                      repos = c('https://enricoschumann.net/R',
-					           getOption('repos')))
+                               getOption('repos')))
